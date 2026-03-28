@@ -1,0 +1,86 @@
+# Research Expert - Effective Discovery Patterns
+# This file captures what search strategies work well for this codebase
+
+# Unique identifier for unambiguous routing
+domain_id: "research-001"
+
+version: "1.0"
+last_updated: "2024-01-01"
+
+file_patterns:
+  - "project/research/**/*"
+  - ".claude/learning/**/*"
+
+keywords:
+  - research
+  - investigate
+  - explore
+  - understand
+  - analyze
+  - document
+  - how does
+  - what is
+  - where is
+  - find
+  - search
+  - pattern
+
+overview:
+  description: |
+    Patterns and strategies for effective codebase exploration.
+    Updated by self-improve based on successful research sessions.
+
+  general_approach:
+    - Start with domain-specific entry points
+    - Follow imports to understand dependencies
+    - Check tests for usage examples
+    - Look for TODO/FIXME comments for known gaps
+
+domain_patterns:
+  # Add your project-specific domain patterns here
+  # Example:
+  # api:
+  #   entry_points:
+  #     - "src/api/routes.py"
+  #   effective_searches:
+  #     - pattern: "@app.route"
+  #       finds: "API endpoints"
+
+cross_cutting:
+  testing:
+    patterns:
+      - "Look in */tests/ directories"
+      - "Search for test_, _test patterns"
+
+  configuration:
+    patterns:
+      - "Check config files for feature flags"
+      - "Check environment variables"
+
+  documentation:
+    patterns:
+      - "README.md in each module"
+      - "docs/ directory"
+      - "project/specs/ for plans"
+
+search_tips:
+  grep_patterns:
+    - tip: "Use word boundaries for precise matches"
+      example: "\\bOrder\\b vs Order (avoids OrderBook, Reorder)"
+    - tip: "Search for class/function definitions"
+      example: "def function_name|class ClassName"
+    - tip: "Find all usages of a function"
+      example: "function_name\\("
+
+  glob_patterns:
+    - tip: "Find all Python files"
+      example: "**/*.py"
+    - tip: "Find all test files"
+      example: "**/*_test.py or **/test_*.py"
+
+# Research doesn't modify code, so no build validation needed
+validation_commands: []
+
+context_files:
+  - "README.md"
+  - "project/backlog.md"

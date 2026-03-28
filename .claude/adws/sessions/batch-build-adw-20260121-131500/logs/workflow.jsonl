@@ -1,0 +1,7 @@
+{"timestamp": "2026-01-21T13:15:00Z", "event_type": "session_start", "workflow": "batch_build_adw", "batch_source": "project/specs/batch-adw-20260121-130212/"}
+{"timestamp": "2026-01-21T13:15:00Z", "event_type": "plans_selected", "count": 3, "plan_ids": ["plan-02", "plan-03", "plan-04"]}
+{"timestamp": "2026-01-21T13:15:30Z", "event_type": "agents_spawned", "count": 3, "plan_ids": ["plan-02", "plan-03", "plan-04"]}
+{"timestamp": "2026-01-21T13:51:00Z", "event_type": "build_complete", "plan_id": "plan-02", "agent_id": "a1164da", "status": "success", "tests_passing": 41}
+{"timestamp": "2026-01-21T13:51:00Z", "event_type": "build_complete", "plan_id": "plan-03", "agent_id": "aac91bf", "status": "success", "tests_passing": 124}
+{"timestamp": "2026-01-21T13:51:00Z", "event_type": "build_complete", "plan_id": "plan-04", "agent_id": "a9a81b8", "status": "success", "tests_passing": 8}
+{"timestamp": "2026-01-21T13:51:30Z", "event_type": "session_end", "status": "completed", "plans_completed": 3, "plans_failed": 0, "total_tests_passing": 173}

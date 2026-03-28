@@ -1,0 +1,237 @@
+# Node Service Expert
+# Mental model for WakeCap's device and network management service
+
+domain_id: "node-service-001"
+
+version: "1.0"
+last_updated: "2026-02-05"
+
+overview:
+  description: |
+    Expert in the WakeCap node service - a TypeScript/Node.js microservice for managing
+    networks and IoT devices (anchors, gateways, sinks, cameras, weather stations, GPS
+    trackers, assets, cards, FOBs). Uses TsED framework with TypeORM and PostgreSQL/PostGIS.
+    Provides REST APIs for device CRUD, location tracking, and metadata operations.
+  primary_domain: "Device & Network Management"
+  secondary_domains:
+    - "TsED framework (Express-based)"
+    - "TypeORM 0.3 with PostgreSQL/PostGIS"
+    - "Multi-tenant architecture"
+    - "Audit logging"
+    - "Redis caching"
+    - "Authorization integration"
+
+file_patterns:
+  - "node-service/**/*.ts"
+  - "node-service/**/*.js"
+  - "node-service/src/controllers/**/*.ts"
+  - "node-service/src/services/**/*.ts"
+  - "node-service/src/models/**/*.ts"
+  - "node-service/src/dtos/**/*.ts"
+  - "node-service/src/migrations/**/*.ts"
+  - "node-service/package.json"
+  - "node-service/tsconfig.json"
+  - "node-service/.eslintrc.js"
+  - "node-service/CLAUDE.md"
+
+keywords:
+  - node
+  - network
+  - anchor
+  - gateway
+  - sink
+  - camera
+  - weather station
+  - gps tracker
+  - asset
+  - card
+  - fob
+  - device
+  - serial
+  - local_id
+  - coordinates
+  - approved
+  - meta
+  - audit
+  - tenant
+  - multi-tenant
+  - tsed
+
+# Project structure understanding
+project_structure:
+  src:
+    controllers: "REST API endpoints with TsED decorators"
+    services: "Business logic layer extending BaseService"
+    models: "TypeORM entity definitions with PostGIS"
+    dtos: "Data transfer objects and validation schemas"
+    middlewares: "Express middleware (auth, etc.)"
+    migrations: "TypeORM database schema migrations"
+    configs: "Database, Redis, and service configuration"
+    utilities: "Helper functions and utilities"
+  test: "Mocha/Chai test files"
+    controllers: "Controller tests"
+    services: "Service tests"
+    data: "Test fixtures by entity"
+  adws: "Automated development workflow scripts"
+  docker: "Docker configuration"
+
+# Technology stack
+tech_stack:
+  runtime: "Node.js >= 16.0.0"
+  language: "TypeScript 4.9.5"
+  framework: "TsED (Ts.ED - Express-based with decorators)"
+  database:
+    primary: "PostgreSQL with PostGIS"
+    orm: "TypeORM 0.3.12"
+    cache: "Redis 4.6"
+  testing: "Mocha + Chai + Sinon"
+  linting: "ESLint with @wakecaptech/eslint-config"
+  authorization: "@wakecaptech/authorization"
+  logging: "@wakecaptech/wakecap-logger"
+  apm: "Elastic APM"
+
+# Database schema (key tables)
+database_schema:
+  node:
+    description: "Master node registry - source of truth for device identity"
+    key_columns:
+      - "id: int (PK)"
+      - "network_id: int"
+      - "project_id: uuid"
+      - "serial_no: varchar"
+      - "local_id: varchar"
+      - "node_type: varchar (anchor, gateway, sink, camera, weather_station)"
+      - "version_no: float"
+      - "tenant_id: varchar"
+
+  anchor_meta:
+    description: "Anchor-specific metadata with approved position"
+    key_columns:
+      - "id: int (PK, FK to node.id)"
+      - "space_id: int"
+      - "coordinates: geometry(Point) - APPROVED POSITION"
+      - "is_approved: boolean"
+
+  network:
+    description: "Project networks with tenant isolation"
+    key_columns:
+      - "id: int (PK)"
+      - "project_id: uuid"
+      - "tenant_id: varchar"
+
+  camera_meta:
+    description: "Camera-specific metadata"
+  sink_meta:
+    description: "Sink-specific metadata"
+  weather_station_meta:
+    description: "Weather station metadata"
+  cellular_provider:
+    description: "Network provider information"
+
+  audit_tables:
+    - "anchor_meta_audit"
+    - "node_audit"
+    - "camera_meta_audit"
+    - "sink_meta_audit"
+
+# Key concepts
+key_concepts:
+  data_ownership:
+    - field: "position (approved)"
+      table: "anchor_meta.coordinates"
+      notes: "User-configured/approved position - owned by this service"
+    - field: "serial_no, local_id"
+      table: "node"
+      notes: "Source of truth for device identity"
+    - field: "is_approved"
+      table: "anchor_meta"
+      notes: "Approval status for anchor positions"
+
+  multi_tenancy: |
+    All tables include tenant_id for data isolation.
+    Authorization middleware validates tenant access.
+
+  node_types:
+    - "anchor: Indoor positioning anchors"
+    - "gateway: Network gateway devices"
+    - "sink: Data collection sinks"
+    - "camera: Surveillance cameras"
+    - "weather_station: Environmental monitoring"
+    - "gps_tracker: GPS tracking devices"
+
+# Code patterns
+patterns:
+  controller_structure: |
+    Controllers extend BaseController and use TsED decorators for
+    validation (@Required, @BodyParams) and documentation (@Summary, @Returns).
+
+  service_layer: |
+    Services extend BaseService for common CRUD operations
+    with TypeORM repository pattern.
+
+  authorization: |
+    Uses @wakecaptech/authorization package with tenant-based permissions
+    configured in endpoints-permissions-config.ts.
+
+  logging: |
+    Structured logging via @wakecaptech/wakecap-logger with correlation IDs.
+
+guidelines:
+  - "Use TsED decorators for route definitions and validation"
+  - "Services extend BaseService for common CRUD patterns"
+  - "All tables must have tenant_id for multi-tenancy"
+  - "Use PostGIS geometry types for spatial data"
+  - "Include audit logging for all device changes"
+  - "Run lint and tests before committing"
+  - "Follow existing patterns in controllers/services"
+  - "Use @wakecaptech/wakecap-logger for structured logging"
+  - "Disable magic numbers lint rule when needed with eslint-disable comment"
+  - "Test files use -spec.ts suffix"
+
+validation_commands:
+  - "cd node-service && npm run lint"
+  - "cd node-service && npm run build"
+  - "cd node-service && npm run test"
+  - "cd node-service && npm run coverage"
+
+context_files:
+  - "node-service/package.json"
+  - "node-service/CLAUDE.md"
+  - "node-service/README.md"
+  - "node-service/src/configs/ormconfig.ts"
+  - "node-service/src/models/"
+  - "node-service/src/controllers/"
+  - "node-service/src/services/"
+  - "node-service/src/migrations/"
+  - "node-service/.eslintrc.js"
+
+# Migration patterns
+migration_patterns:
+  orm: "TypeORM 0.3"
+  file_pattern: "src/migrations/{timestamp}-{name}.ts"
+  run_command: "npm run migrate"
+  rollback_command: "npm run rollback"
+  config_file: "src/configs/ormconfig.ts"
+
+# Git workflow
+git_workflow:
+  main_branch: "feature-agentic-coding"
+  note: "Main branch is NOT master - use feature-agentic-coding for PRs"
+  pre_commit_hooks: "Available in git-scripts/"
+
+# Development commands
+commands:
+  development:
+    dev: "npm run dev (Start with ts-node)"
+    dev_watch: "npm run dev:watch (Start with nodemon auto-reload)"
+    build: "npm run build"
+    start: "npm start (Run built application)"
+  testing:
+    test: "npm run test"
+    coverage: "npm run coverage"
+  quality:
+    lint: "npm run lint"
+    lint_fix: "npm run lint:fix"
+  database:
+    migrate: "npm run migrate"
+    rollback: "npm run rollback"

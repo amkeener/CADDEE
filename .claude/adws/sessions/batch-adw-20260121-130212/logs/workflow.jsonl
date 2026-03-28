@@ -1,0 +1,10 @@
+{"timestamp": "2026-01-21T13:02:12Z", "event_type": "session_start", "workflow": "batch_plan_adw", "task_count": 4}
+{"timestamp": "2026-01-21T13:03:00Z", "event_type": "expert_routed", "plan_id": "plan-01", "expert": "playwright", "reason": "Test file pattern match"}
+{"timestamp": "2026-01-21T13:03:00Z", "event_type": "expert_routed", "plan_id": "plan-02", "expert": "playwright", "reason": "ATDD acceptance testing"}
+{"timestamp": "2026-01-21T13:03:00Z", "event_type": "expert_routed", "plan_id": "plan-03", "expert": "orchestrator", "reason": "Cross-cutting coverage concern"}
+{"timestamp": "2026-01-21T13:03:00Z", "event_type": "expert_routed", "plan_id": "plan-04", "expert": "playwright", "reason": "Test infrastructure DSL"}
+{"timestamp": "2026-01-21T13:06:10Z", "event_type": "plan_created", "plan_id": "plan-01", "expert": "playwright", "path": "project/specs/batch-adw-20260121-130212/plan-01-fix-empty-index-test.md"}
+{"timestamp": "2026-01-21T13:06:14Z", "event_type": "plan_created", "plan_id": "plan-02", "expert": "playwright", "path": "project/specs/batch-adw-20260121-130212/plan-02-implement-atdd-test-bodies.md"}
+{"timestamp": "2026-01-21T13:06:03Z", "event_type": "plan_created", "plan_id": "plan-03", "expert": "orchestrator", "path": "project/specs/batch-adw-20260121-130212/plan-03-increase-code-coverage.md"}
+{"timestamp": "2026-01-21T13:06:46Z", "event_type": "plan_created", "plan_id": "plan-04", "expert": "playwright", "path": "project/specs/batch-adw-20260121-130212/plan-04-complete-gateway-health-dsl.md"}
+{"timestamp": "2026-01-21T13:07:00Z", "event_type": "session_end", "status": "completed", "plan_count": 4}

@@ -1,0 +1,15 @@
+{
+  "session_id": "batch-build-adw-20260208-082000",
+  "workflow_type": "batch_build",
+  "status": "completed",
+  "created": "2026-02-08T08:20:00Z",
+  "completed": "2026-02-08T08:29:00Z",
+  "batch_source": "project/specs/batch-adw-20260208-080342",
+  "plans_total": 1,
+  "plans_completed": 1,
+  "plans_failed": 0,
+  "experts_used": ["frontend-2.0"],
+  "results": [
+    {"plan_id": "plan-01", "status": "complete", "expert": "frontend-2.0"}
+  ]
+}

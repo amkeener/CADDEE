@@ -1,0 +1,15 @@
+{
+  "session_id": "batch-adw-20260121-130212",
+  "workflow_type": "batch_plan",
+  "status": "completed",
+  "created": "2026-01-21T13:02:12Z",
+  "completed": "2026-01-21T13:07:00Z",
+  "implement": false,
+  "experts_used": ["playwright", "orchestrator"],
+  "plans": [
+    {"id": "plan-01", "path": "project/specs/batch-adw-20260121-130212/plan-01-fix-empty-index-test.md", "status": "ready", "expert": "playwright"},
+    {"id": "plan-02", "path": "project/specs/batch-adw-20260121-130212/plan-02-implement-atdd-test-bodies.md", "status": "ready", "expert": "playwright"},
+    {"id": "plan-03", "path": "project/specs/batch-adw-20260121-130212/plan-03-increase-code-coverage.md", "status": "ready", "expert": "orchestrator"},
+    {"id": "plan-04", "path": "project/specs/batch-adw-20260121-130212/plan-04-complete-gateway-health-dsl.md", "status": "ready", "expert": "playwright"}
+  ]
+}

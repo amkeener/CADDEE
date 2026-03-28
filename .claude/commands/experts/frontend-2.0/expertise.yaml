@@ -1,0 +1,175 @@
+# Frontend 2.0 Expert
+# Mental model for WakeCap's React micro-frontend shell and shared packages
+
+domain_id: "frontend-2.0-001"
+
+version: "1.0"
+last_updated: "2026-02-05"
+
+overview:
+  description: |
+    Expert in WakeCap's frontend-2.0 monorepo - the main frontend shell using Single-SPA
+    for micro-frontend architecture. Contains shared packages (UI components, helpers,
+    icons) and web applications (admin, nav, pm, om, ws, map-tools). Uses Lerna/pnpm
+    for workspace management.
+  primary_domain: "React Micro-Frontend Shell"
+  secondary_domains:
+    - "Single-SPA micro-frontend orchestration"
+    - "Lerna/pnpm monorepo management"
+    - "React component libraries"
+    - "TypeScript/JavaScript frontend development"
+    - "Zustand state management"
+
+file_patterns:
+  - "frontend-2.0/**/*.ts"
+  - "frontend-2.0/**/*.tsx"
+  - "frontend-2.0/**/*.js"
+  - "frontend-2.0/**/*.jsx"
+  - "frontend-2.0/**/*.css"
+  - "frontend-2.0/**/*.scss"
+  - "frontend-2.0/packages/**/*"
+  - "frontend-2.0/package.json"
+  - "frontend-2.0/lerna.json"
+  - "frontend-2.0/pnpm-workspace.yaml"
+  - "frontend-2.0/.eslintrc.js"
+  - "frontend-2.0/.prettierrc"
+  - "frontend-2.0/tsconfig.base.json"
+
+keywords:
+  - frontend
+  - react
+  - single-spa
+  - micro-frontend
+  - lerna
+  - pnpm
+  - monorepo
+  - capui
+  - capicons
+  - admin
+  - nav
+  - portal
+  - shell
+  - zustand
+  - tanstack
+  - react-table
+
+# Project structure understanding
+project_structure:
+  packages:
+    shared:
+      CapIcons: "Icon library package (@wakecap-fe/capicons)"
+      CapUI: "Core UI component library (@wakecap-fe/capui)"
+      components: "Shared React components (@wakecap-fe/components)"
+      helpers: "Utility functions and hooks (@wakecap-fe/helpers)"
+      ui: "Tailwind-based UI components (@wakecap-fe/ui)"
+    web:
+      admin: "Admin panel micro-frontend (@wakecap-fe/admin)"
+      map-tools: "Map tools micro-frontend (@wakecap-fe/map-tools)"
+      nav: "Navigation bar micro-frontend (@wakecap-fe/nav)"
+      om: "Operations management micro-frontend (@wakecap-fe/om)"
+      pm: "Project management micro-frontend (@wakecap-fe/pm)"
+      root-config: "Single-SPA root configuration (@wakecap-fe/root-config)"
+      ws: "Workspace micro-frontend (@wakecap-fe/ws)"
+  mails: "Email templates"
+  docs: "Documentation"
+  patches: "pnpm patch files"
+
+# Technology stack
+tech_stack:
+  runtime: "Node.js >= 22.0.0"
+  language: "TypeScript 5.2"
+  framework: "React 18 with Single-SPA"
+  package_manager: "pnpm >= 10.0.0"
+  monorepo: "Lerna 7.3"
+  state_management: "Zustand"
+  data_tables: "TanStack React Table"
+  forms: "React Hook Form + Zod"
+  http: "Axios"
+  styling:
+    - "SCSS modules"
+    - "Tailwind CSS"
+  testing:
+    - "Jest"
+    - "React Testing Library"
+  linting:
+    - "ESLint (Airbnb + TypeScript config)"
+    - "Prettier"
+    - "Stylelint"
+  git_hooks: "Husky + Commitlint"
+
+# Build and start scripts
+scripts:
+  start_apps:
+    maps: "pnpm start:apps:maps"
+    pm: "pnpm start:apps:pm"
+    om: "pnpm start:apps:om"
+    admin: "pnpm start:apps:admin"
+    ws: "pnpm start:apps:ws"
+  build:
+    all: "pnpm build:all"
+    parallel: "pnpm build:all:parallel"
+  quality:
+    lint: "pnpm lint:check"
+    format_check: "pnpm format:check"
+    format_fix: "pnpm format:write"
+  testing:
+    all: "pnpm test:all"
+    pipeline: "pnpm test:all:pipeline"
+
+# Pre-commit checks
+pre_commit_checks:
+  required:
+    - name: "Lint Check"
+      command: "pnpm lint:check"
+      description: "Runs ESLint on all packages"
+
+    - name: "Format Check"
+      command: "pnpm format:check"
+      description: "Runs Prettier to check formatting"
+      fix_command: "pnpm format:write"
+
+    - name: "TypeScript Check"
+      command: "pnpm tsc --noEmit"
+      description: "Type-checks without emitting files"
+
+guidelines:
+  - "ALWAYS run format:check before committing"
+  - "ALWAYS run lint:check before committing"
+  - "Use pnpm for all package operations (npm is blocked)"
+  - "Follow Single-SPA patterns for micro-frontend communication"
+  - "Shared components go in packages/shared/components"
+  - "Use @wakecap-fe/ scope for all internal packages"
+  - "Follow Airbnb style guide with TypeScript extensions"
+  - "Use Zustand for state management, not Redux directly"
+  - "Test with Jest and React Testing Library"
+  - "Use conventional commits (commitlint enforced)"
+
+validation_commands:
+  - "cd frontend-2.0 && pnpm install"
+  - "cd frontend-2.0 && pnpm lint:check"
+  - "cd frontend-2.0 && pnpm format:check"
+  - "cd frontend-2.0 && pnpm build:all"
+  - "cd frontend-2.0 && pnpm test:all"
+
+context_files:
+  - "frontend-2.0/package.json"
+  - "frontend-2.0/lerna.json"
+  - "frontend-2.0/pnpm-workspace.yaml"
+  - "frontend-2.0/tsconfig.base.json"
+  - "frontend-2.0/.eslintrc.js"
+  - "frontend-2.0/.prettierrc"
+
+# Workspace package dependencies
+package_dependencies:
+  description: |
+    Build order matters due to inter-package dependencies:
+    1. helpers, ui, CapUI, CapIcons (no internal deps)
+    2. components (depends on helpers, ui, CapUI, CapIcons)
+    3. web apps (depend on shared packages)
+  build_order:
+    - "helpers"
+    - "ui (tui)"
+    - "CapUI"
+    - "CapIcons"
+    - "components"
+    - "web apps (admin, nav, pm, om, ws, map-tools, root-config)"

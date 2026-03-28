@@ -1,0 +1,54 @@
+{
+  "session_id": "batch-build-adw-20260121-131500",
+  "workflow_type": "batch_build",
+  "status": "completed",
+  "created": "2026-01-21T13:15:00Z",
+  "completed": "2026-01-21T13:51:30Z",
+  "batch_source": "project/specs/batch-adw-20260121-130212/",
+  "plans_total": 3,
+  "plans_completed": 3,
+  "plans_failed": 0,
+  "experts_used": ["playwright", "orchestrator"],
+  "results": [
+    {
+      "plan_id": "plan-02",
+      "plan_path": "project/specs/batch-adw-20260121-130212/plan-02-implement-atdd-test-bodies.md",
+      "expert": "playwright",
+      "status": "success",
+      "agent_id": "a1164da",
+      "tests_passing": 41,
+      "files_changed": [
+        "test/acceptance/linear/test_zone_health_from_linear.test.ts",
+        "test/acceptance/linear/test_gateway_health_from_linear.test.ts"
+      ]
+    },
+    {
+      "plan_id": "plan-03",
+      "plan_path": "project/specs/batch-adw-20260121-130212/plan-03-increase-code-coverage.md",
+      "expert": "orchestrator",
+      "status": "success",
+      "agent_id": "aac91bf",
+      "tests_passing": 124,
+      "coverage": {
+        "combinedAnchorAnalysis.ts": {"statements": 95.2, "branches": 89.51, "functions": 100, "lines": 95.91},
+        "coverageAnalysis.ts": {"statements": 100, "branches": 100, "functions": 100, "lines": 100}
+      },
+      "files_changed": [
+        "src/app/services/analysis/combinedAnchorAnalysis.test.ts",
+        "src/app/services/analysis/coverageAnalysis.test.ts"
+      ]
+    },
+    {
+      "plan_id": "plan-04",
+      "plan_path": "project/specs/batch-adw-20260121-130212/plan-04-complete-gateway-health-dsl.md",
+      "expert": "playwright",
+      "status": "success",
+      "agent_id": "a9a81b8",
+      "tests_passing": 8,
+      "files_changed": [
+        "src/app/services/atdd/index.ts",
+        "test/acceptance/linear/test_gateway_health_from_linear.test.ts"
+      ]
+    }
+  ]
+}

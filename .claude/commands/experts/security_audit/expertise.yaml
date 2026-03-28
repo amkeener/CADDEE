@@ -1,0 +1,143 @@
+# Security Audit Expert
+# Mental model for security review and analysis
+
+# Unique identifier for unambiguous routing
+domain_id: "security-001"
+
+version: "1.0"
+last_updated: "2024-01-01"
+
+overview:
+  description: |
+    Expert in security auditing and vulnerability analysis.
+    Always included in code reviews for security-first analysis.
+  primary_domain: "Security auditing"
+  secondary_domains:
+    - "Vulnerability analysis"
+    - "Input validation"
+    - "Authentication/Authorization"
+    - "Cryptography review"
+
+file_patterns:
+  - "**/*"  # Security applies to all files
+
+keywords:
+  - security
+  - audit
+  - vulnerability
+  - attack
+  - exploit
+  - authentication
+  - authorization
+  - encryption
+  - injection
+  - xss
+  - csrf
+  - sensitive
+
+audit_checklist:
+  input_validation:
+    - "All user inputs validated at entry points"
+    - "Numeric bounds checked before operations"
+    - "String lengths and formats validated"
+    - "SQL/NoSQL injection prevention"
+    - "Command injection prevention"
+    - "Path traversal prevention"
+
+  authentication:
+    - "Secure password hashing (bcrypt, argon2)"
+    - "Session management security"
+    - "Token validation"
+    - "Brute force protection"
+
+  authorization:
+    - "Access control on sensitive operations"
+    - "Role-based permissions enforced"
+    - "Resource ownership validation"
+    - "Privilege escalation prevention"
+
+  cryptography:
+    - "Constant-time comparisons for secrets"
+    - "Proper key derivation"
+    - "Secure random number generation"
+    - "No hardcoded secrets"
+
+  data_protection:
+    - "Sensitive data encrypted at rest"
+    - "Secure transmission (TLS)"
+    - "PII handling compliance"
+    - "Logging sanitization"
+
+  error_handling:
+    - "No sensitive data in error messages"
+    - "Proper exception handling"
+    - "Fail securely"
+
+severity_levels:
+  critical:
+    description: "Immediate security compromise"
+    examples:
+      - "Remote code execution"
+      - "Authentication bypass"
+      - "SQL injection"
+    action: "Must fix before merge"
+
+  high:
+    description: "Significant security weakness"
+    examples:
+      - "Privilege escalation"
+      - "Sensitive data exposure"
+      - "CSRF vulnerability"
+    action: "Should fix before merge"
+
+  medium:
+    description: "Potential security issue"
+    examples:
+      - "Missing input validation"
+      - "Weak cryptography"
+      - "Information disclosure"
+    action: "Fix in next sprint"
+
+  low:
+    description: "Minor security consideration"
+    examples:
+      - "Verbose error messages"
+      - "Missing rate limiting"
+      - "Suboptimal security headers"
+    action: "Track for future improvement"
+
+what_if_analysis:
+  # Questions to ask when reviewing code
+  general:
+    - "What if an attacker controls this input?"
+    - "What if this operation is called repeatedly?"
+    - "What if the user is not authenticated?"
+    - "What if the user lacks permission?"
+
+  api:
+    - "What if the API is called with malformed data?"
+    - "What if rate limits don't exist?"
+    - "What if tokens are leaked?"
+
+  data:
+    - "What if the database is compromised?"
+    - "What if logs contain sensitive data?"
+    - "What if backups are accessed?"
+
+guidelines:
+  - "Always review for OWASP Top 10 vulnerabilities"
+  - "Check for secrets in code (API keys, passwords)"
+  - "Verify input validation at trust boundaries"
+  - "Review authentication and authorization logic"
+  - "Check error handling for information disclosure"
+  - "Validate cryptographic implementations"
+
+validation_commands:
+  # Add security scanning tools as appropriate
+  # - "bandit -r src/"  # Python security linter
+  # - "npm audit"       # Node.js security audit
+  # - "cargo audit"     # Rust security audit
+
+context_files:
+  - "SECURITY.md"
+  - ".env.example"

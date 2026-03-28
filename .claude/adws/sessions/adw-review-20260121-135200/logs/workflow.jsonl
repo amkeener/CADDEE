@@ -1,0 +1,6 @@
+{"timestamp": "2026-01-21T13:52:00Z", "event_type": "session_start", "workflow": "code_review_adw", "scope": 3}
+{"timestamp": "2026-01-21T13:52:10Z", "event_type": "static_analysis", "eslint_errors": 0, "eslint_warnings": 461, "ts_errors": 0, "prettier_issues": 0}
+{"timestamp": "2026-01-21T13:52:20Z", "event_type": "security_review", "critical": 0, "high": 0, "medium": 0, "low": 1}
+{"timestamp": "2026-01-21T13:52:30Z", "event_type": "domain_review", "expert": "playwright", "critical": 0, "concerns": 1, "suggestions": 2}
+{"timestamp": "2026-01-21T13:52:40Z", "event_type": "validation_commands", "status": "passed", "tests_passed": 165, "tests_failed": 0}
+{"timestamp": "2026-01-21T13:52:50Z", "event_type": "session_end", "verdict": "APPROVE", "report_path": "project/code_reviews/2026-01-21-adw-test-coverage-expansion.md"}

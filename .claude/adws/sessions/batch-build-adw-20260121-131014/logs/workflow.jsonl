@@ -1,0 +1,5 @@
+{"timestamp": "2026-01-21T13:10:14Z", "event_type": "session_start", "workflow": "batch_build_adw", "batch_source": "project/specs/batch-adw-20260121-130212/"}
+{"timestamp": "2026-01-21T13:11:40Z", "event_type": "agents_spawned", "count": 4, "plan_ids": ["plan-01", "plan-02", "plan-03", "plan-04"]}
+{"timestamp": "2026-01-21T13:12:09Z", "event_type": "rate_limit_hit", "affected_agents": ["a124fd1", "a738ac7", "a187d19", "a2d95bf"]}
+{"timestamp": "2026-01-21T13:12:30Z", "event_type": "build_partial", "plan_id": "plan-01", "steps_completed": 3, "files_changed": ["src/app/jest.setup.ts", "jest.config.js", "src/app/index.test.tsx"]}
+{"timestamp": "2026-01-21T13:12:30Z", "event_type": "session_end", "status": "partial", "plans_completed": 1, "plans_partial": 3, "plans_failed": 0}

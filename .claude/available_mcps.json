@@ -1,0 +1,12 @@
+{
+  "description": "Available MCP servers for this project. Loaded on-demand via /prime.",
+  "servers": {
+    "linear-server": {
+      "description": "Linear issue tracking - fetch/update issues, comments, projects",
+      "type": "http",
+      "url": "https://mcp.linear.app/mcp",
+      "requiresAuth": true,
+      "authNote": "Will prompt for Linear OAuth on first use"
+    }
+  }
+}

@@ -1,0 +1,191 @@
+# ADW Orchestrator Expert
+# Mental model for expert routing and workflow coordination
+
+# Unique identifier for unambiguous routing
+domain_id: "orchestrator-001"
+
+version: "1.0"
+last_updated: "2024-01-01"
+
+overview:
+  description: |
+    Orchestrates ADW (Agentic Development Workflows) by routing tasks to appropriate
+    domain experts based on file patterns, keywords, and task context.
+  primary_domain: "Expert routing and workflow coordination"
+  secondary_domains:
+    - "Domain classification"
+    - "Multi-expert coordination"
+    - "Session management"
+    - "Workflow logging"
+  key_files:
+    - .claude/commands/plan_adw.md
+    - .claude/commands/build_adw.md
+    - .claude/commands/code_review_adw.md
+    - .claude/commands/fix_adw.md
+    - .claude/commands/research_adw.md
+
+file_patterns:
+  - ".claude/commands/*_adw.md"
+  - ".claude/commands/experts/*/expertise.yaml"
+  - ".claude/hooks/**/*.py"
+
+keywords:
+  - orchestrator
+  - adw
+  - workflow
+  - expert
+  - routing
+  - session
+
+# Expert routing rules - customize for your project
+routing_rules:
+  # Add your domain experts here
+  # Example:
+  # python_backend:
+  #   file_patterns:
+  #     - "src/**/*.py"
+  #   keywords:
+  #     - python
+  #     - api
+  #     - backend
+  #   priority: 1
+  #   expert_path: ".claude/commands/experts/python_backend"
+
+  security_audit:
+    file_patterns:
+      - "**/*"
+    keywords:
+      - security
+      - audit
+      - vulnerability
+      - attack
+      - exploit
+    priority: 0  # Always available as secondary expert
+    always_include_for:
+      - code_review_adw
+    expert_path: ".claude/commands/experts/security_audit"
+
+  python_tooling:
+    file_patterns:
+      - ".claude/hooks/**/*.py"
+      - "scripts/**/*.py"
+    keywords:
+      - hook
+      - script
+      - automation
+      - python
+    priority: 1
+    expert_path: ".claude/commands/experts/python_tooling"
+
+  research:
+    file_patterns: []
+    keywords:
+      - research
+      - investigate
+      - explore
+      - understand
+      - analyze
+      - document
+    priority: 2  # Lower priority, used when exploring
+    expert_path: ".claude/commands/experts/research"
+
+  frontend:
+    file_patterns:
+      - "**/*.tsx"
+      - "**/*.ts"
+      - "**/*.jsx"
+      - "**/*.js"
+      - "package.json"
+      - ".eslintrc*"
+      - ".prettierrc*"
+    keywords:
+      - frontend
+      - react
+      - typescript
+      - eslint
+      - prettier
+      - lint
+      - format
+      - component
+      - webpack
+    priority: 1
+    expert_path: ".claude/commands/experts/frontend"
+
+# Available experts directory
+experts_path: ".claude/commands/experts"
+
+# Verified experts (directories confirmed to exist)
+verified_experts:
+  - orchestrator
+  - python_tooling
+  - research
+  - security_audit
+  - frontend
+  - playwright
+
+# Workflow types and their expert requirements
+workflows:
+  plan_adw:
+    description: "Create implementation plan with expert guidance"
+    requires_expert: true
+    output: "project/specs/plan/plan-adw-{name}.md"
+    expert_routing: true
+
+  build_adw:
+    description: "Implement plan with expert validation"
+    requires_expert: true
+    requires_plan: true
+    expert_routing: true
+
+  code_review_adw:
+    description: "Multi-expert code review"
+    requires_expert: true
+    always_include: ["security_audit"]
+    expert_routing: true
+
+  fix_adw:
+    description: "Fix review issues with expert guidance"
+    requires_expert: true
+    requires_review: true
+    expert_routing: true
+
+  research_adw:
+    description: "Research with expert routing"
+    requires_expert: true
+    default_expert: "research"
+    expert_routing: true
+
+# Session management
+session:
+  directory: "adws/sessions/{session_id}/"
+  log_file: "logs/adw/{session_id}/workflow.jsonl"
+  state_file: "adws/sessions/{session_id}/state.json"
+  context_file: "adws/sessions/{session_id}/context.md"
+
+# Routing algorithm
+routing_algorithm: |
+  1. Parse task description for file paths (Glob matches)
+  2. Extract keywords from task description
+  3. For each expert:
+     - Score = (file_pattern_matches * 10) + (keyword_matches * 2)
+  4. Select expert with highest score
+  5. If tie, use priority (lower = higher priority)
+  6. If no match, use research expert for exploration
+  7. Validate expert_path exists before routing
+
+validation_commands:
+  - "python3 -m py_compile .claude/adws/core/orchestrator.py"
+  - "python3 -m py_compile .claude/adws/core/expert_router.py"
+  - "python3 -m py_compile .claude/adws/core/state.py"
+
+context_files:
+  - ".claude/commands/experts/"
+  - ".claude/adws/core/"
+
+guidelines:
+  - "Route to single primary expert when possible"
+  - "Include security_audit for all code reviews"
+  - "Log all routing decisions to workflow.jsonl"
+  - "Create session context.md with gathered information"
+  - "Validate expert exists before routing"
+  - "Fall back to research for unknown domains"

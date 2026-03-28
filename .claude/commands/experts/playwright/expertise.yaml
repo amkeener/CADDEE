@@ -1,0 +1,151 @@
+# Playwright E2E Testing Expert
+# Mental model for browser automation and canvas testing
+
+domain_id: "playwright-e2e-001"
+
+version: "1.0"
+last_updated: "2026-01-20"
+
+overview:
+  description: |
+    Expert in Playwright browser automation and E2E testing.
+    Specializes in canvas-heavy applications like maps (ArcGIS, MapLibre).
+    Handles test execution, failure analysis, and artifact capture.
+  primary_domain: "E2E browser testing"
+  secondary_domains:
+    - "Canvas/map testing"
+    - "Page Object Model"
+    - "Visual debugging"
+    - "Test artifact capture"
+  key_files:
+    - .claude/playwright/config.py
+    - .claude/playwright/operations.py
+    - .claude/playwright/page_objects/map_page.py
+
+file_patterns:
+  - "**/tests/e2e/**/*.py"
+  - "**/tests/e2e/**/*.ts"
+  - "**/*.spec.ts"
+  - "**/*.spec.js"
+  - "**/*.setup.ts"
+  - "**/playwright.config.ts"
+  - "**/playwright/**/*.py"
+  - "**/playwright/**/*.ts"
+  - "**/page_objects/**/*.py"
+  - "**/page_objects/**/*.ts"
+  - "**/conftest.py"
+  - "**/fixtures/**/*.ts"
+
+keywords:
+  - playwright
+  - e2e
+  - browser
+  - test
+  - canvas
+  - map
+  - arcgis
+  - maplibre
+  - screenshot
+  - video
+  - trace
+  - page object
+  - fixture
+  - headless
+
+canvas_testing:
+  challenges:
+    - "No DOM elements for map features - must use coordinate clicks"
+    - "Tile loading delays - need wait strategies"
+    - "Floor plan overlays - complex layer stacking"
+    - "Popups/tooltips appear on hover/click with timing issues"
+
+  strategies:
+    wait_for_tiles: |
+      Always wait after map load for tile rendering:
+      self.wait_for_timeout(2000)
+
+    coordinate_clicks: |
+      Canvas has no DOM, use position-based clicks:
+      canvas.click(position={"x": x, "y": y})
+
+    layer_verification: |
+      Wait for network idle or check layer visibility via JS evaluation:
+      page.evaluate("() => map.getLayer('facilities')?.visibility")
+
+    screenshot_debugging: |
+      Capture before/after screenshots for visual debugging:
+      page.screenshot(path="before_click.png")
+      # ... interaction
+      page.screenshot(path="after_click.png")
+
+page_object_patterns:
+  base_page:
+    - "navigate_to(path)"
+    - "wait_for_selector(selector, state, timeout)"
+    - "wait_for_load_state(state)"
+    - "click(selector)"
+    - "fill(selector, value)"
+    - "get_text(selector)"
+    - "take_screenshot(name)"
+
+  map_page:
+    - "wait_for_map_ready(timeout)"
+    - "click_at_coordinates(x, y)"
+    - "hover_at_coordinates(x, y)"
+    - "wait_for_layer_load(layer_name)"
+    - "capture_map_screenshot(name)"
+    - "zoom_in(clicks)"
+    - "zoom_out(clicks)"
+    - "get_visible_layers()"
+
+fixtures:
+  browser_context_args:
+    description: "Configure viewport, video recording, ignore HTTPS errors"
+  page:
+    description: "Fresh page per test with default timeouts"
+  authenticated_page:
+    description: "Page with user session already logged in"
+  handle_test_failure:
+    description: "Auto-capture screenshot and artifacts on failure"
+
+guidelines:
+  test_structure:
+    - "Use Page Object Model - separate selectors from test logic"
+    - "One page object per major view/component"
+    - "Keep tests focused - one behavior per test"
+    - "Use descriptive test names: test_<feature>_<scenario>"
+
+  canvas_testing:
+    - "Always wait 2+ seconds after map load for tiles"
+    - "Use coordinate-based clicks for canvas interactions"
+    - "Capture screenshots before/after complex interactions"
+    - "Wait for network idle before asserting map state"
+    - "Use JS evaluation to check layer visibility"
+
+  artifact_capture:
+    - "Enable screenshot_on_failure in config"
+    - "Use video recording for flaky tests"
+    - "Enable trace recording for debugging complex flows"
+    - "Store artifacts in timestamped directories"
+
+  error_handling:
+    - "Use try/except for optional waits"
+    - "Log warnings for non-critical timeouts"
+    - "Capture artifacts before raising errors"
+
+validation_commands:
+  # Python projects (ADW core)
+  - "python3 -m py_compile .claude/playwright/*.py 2>/dev/null || true"
+  - "python3 -m py_compile .claude/playwright/page_objects/*.py 2>/dev/null || true"
+  # TypeScript projects (frontend)
+  - "npx tsc --noEmit -p tsconfig.json 2>/dev/null || pnpm exec tsc --noEmit 2>/dev/null || true"
+  - "pnpm lint:check -- 'tests/e2e/**/*.ts' 2>/dev/null || npm run lint -- 'tests/e2e/**/*.ts' 2>/dev/null || true"
+
+context_files:
+  # Python (ADW core module)
+  - ".claude/playwright/config.py"
+  - ".claude/playwright/fixtures.py"
+  - ".claude/playwright/page_objects/base_page.py"
+  # TypeScript (frontend projects)
+  - "playwright.config.ts"
+  - "tests/e2e/**/*.spec.ts"

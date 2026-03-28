@@ -1,0 +1,28 @@
+{
+  "assignments": [
+    {
+      "plan_id": "plan-01",
+      "plan_path": "project/specs/batch-adw-20260121-130212/plan-01-fix-empty-index-test.md",
+      "expert": "playwright",
+      "priority": "HIGH"
+    },
+    {
+      "plan_id": "plan-02",
+      "plan_path": "project/specs/batch-adw-20260121-130212/plan-02-implement-atdd-test-bodies.md",
+      "expert": "playwright",
+      "priority": "HIGH"
+    },
+    {
+      "plan_id": "plan-03",
+      "plan_path": "project/specs/batch-adw-20260121-130212/plan-03-increase-code-coverage.md",
+      "expert": "orchestrator",
+      "priority": "MEDIUM"
+    },
+    {
+      "plan_id": "plan-04",
+      "plan_path": "project/specs/batch-adw-20260121-130212/plan-04-complete-gateway-health-dsl.md",
+      "expert": "playwright",
+      "priority": "MEDIUM"
+    }
+  ]
+}

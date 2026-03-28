@@ -1,0 +1,205 @@
+# Frontend 2.0 Maps Expert
+# Mental model for WakeCap's ArcGIS-powered maps micro-frontend
+
+domain_id: "frontend-2.0-maps-001"
+
+version: "1.0"
+last_updated: "2026-02-05"
+
+overview:
+  description: |
+    Expert in the WakeCap maps micro-frontend - a React/TypeScript application for
+    interactive construction site map management. Features ArcGIS Maps SDK integration,
+    device placement (anchors, gateways, cameras), zone management, blueprint overlays,
+    and space management. Operates as a Single-SPA micro-frontend.
+  primary_domain: "ArcGIS Maps & Spatial UI"
+  secondary_domains:
+    - "ArcGIS Maps SDK (@arcgis/core)"
+    - "Single-SPA micro-frontend integration"
+    - "Device management (anchors, gateways, cameras)"
+    - "Zone drawing and geofencing"
+    - "Blueprint/floor plan overlays"
+    - "i18n with RTL support (English/Arabic)"
+
+file_patterns:
+  - "frontend-2.0-maps/**/*.ts"
+  - "frontend-2.0-maps/**/*.tsx"
+  - "frontend-2.0-maps/**/*.js"
+  - "frontend-2.0-maps/**/*.jsx"
+  - "frontend-2.0-maps/**/*.css"
+  - "frontend-2.0-maps/**/*.scss"
+  - "frontend-2.0-maps/src/**/*"
+  - "frontend-2.0-maps/package.json"
+  - "frontend-2.0-maps/.eslintrc.js"
+  - "frontend-2.0-maps/.prettierrc"
+  - "frontend-2.0-maps/webpack.config.js"
+
+keywords:
+  - maps
+  - arcgis
+  - esri
+  - gis
+  - map
+  - spatial
+  - geofence
+  - zone
+  - blueprint
+  - floor plan
+  - anchor
+  - gateway
+  - camera
+  - weather station
+  - device
+  - space
+  - polygon
+  - coordinates
+  - marker
+  - sketch
+  - i18n
+  - rtl
+  - arabic
+
+# Project structure understanding
+project_structure:
+  src:
+    app:
+      APIs: "API service modules by domain (Anchors, Gateways, Cameras, Zones, Spaces, etc.)"
+      components:
+        Drawer: "Slide-out drawer panel"
+        Helpers: "Utility components"
+        Layout: "Main MapLayout component"
+        Map: "Map-related components (DeviceSwitcher, Toolbar, Tooltip)"
+        Panel: "Side panel components"
+        Spaces: "Space management UI and device category views"
+      config:
+        locales: "i18n translation files (en, ar)"
+        esriConfig: "ArcGIS SDK configuration"
+        i18n: "i18next setup"
+      constants: "App constants"
+      context: "React Context providers"
+      hooks: "Custom React hooks"
+      utils: "Utility functions"
+    stories: "Storybook documentation"
+    root.component.tsx: "App root for single-spa"
+    wakecap-fe-map-app.tsx: "single-spa lifecycle entry"
+  "@types": "TypeScript declarations"
+
+# Technology stack
+tech_stack:
+  runtime: "Node.js >= 18.0.0"
+  language: "TypeScript 5.2"
+  framework: "React 18"
+  maps: "ArcGIS Maps SDK (@arcgis/core 4.33)"
+  ui_library: "Material UI (MUI) 7"
+  state_management:
+    - "React Context API"
+    - "Redux Toolkit"
+  routing: "React Router 6"
+  micro_frontend: "single-spa + single-spa-react"
+  i18n: "i18next + react-i18next"
+  charts: "Recharts"
+  drag_drop: "@hello-pangea/dnd"
+  geometry: "@turf/turf"
+  http: "Axios"
+  build_tool: "Webpack 5"
+  package_manager: "pnpm >= 10.0.0"
+  testing:
+    - "Jest"
+    - "React Testing Library"
+  documentation: "Storybook 8"
+
+# Context providers architecture
+context_providers:
+  MapContext: "ArcGIS map instance and view management"
+  SpacesContext: "Spaces data and CRUD operations"
+  ZonesContext: "Zone management within spaces"
+  ViewContext: "Current view/panel state"
+  DeviceHighlightingContext: "Device selection and highlighting on map"
+  DeviceSwitcherContext: "Handles overlapping device selection"
+  CoordinatesContexts: "Device coordinate editing (per device type)"
+  ToastContext: "Toast notifications"
+  ConfirmationDialogContext: "Confirmation modals"
+  DrawerContext: "Side drawer state"
+  BackdropContext: "Loading overlay state"
+
+# Key custom hooks
+hooks:
+  useMapContext: "Access ArcGIS map instance"
+  useSpaces: "Space data operations"
+  useSpacesCRUD: "Space create/update/delete"
+  useSpacePolygonEdit: "Edit space boundaries on map"
+  useZonesMapDisplay: "Render zones on map"
+  useSketchViewModel: "ArcGIS sketch tool integration"
+  useLocationSearch: "Geocoding/location search"
+  useGeolocation: "Browser geolocation"
+
+# Pre-commit checks
+pre_commit_checks:
+  required:
+    - name: "Lint Check"
+      command: "pnpm lint:check"
+      description: "Runs ESLint"
+
+    - name: "Format Check"
+      command: "pnpm format:check"
+      description: "Runs Prettier to check formatting"
+      fix_command: "pnpm format:write"
+
+guidelines:
+  - "ALWAYS run format:check before committing"
+  - "ALWAYS run lint:check before committing"
+  - "Use pnpm for all package operations"
+  - "Follow ArcGIS best practices for map layers and graphics"
+  - "Use React Context for map state management"
+  - "Support both standalone and micro-frontend modes"
+  - "Include i18n translations for all user-facing text (en + ar)"
+  - "Handle RTL layout for Arabic language support"
+  - "Use MUI components consistently"
+  - "Document complex components in Storybook"
+  - "Colocate tests with source files (*.test.tsx)"
+
+validation_commands:
+  - "cd frontend-2.0-maps && pnpm install"
+  - "cd frontend-2.0-maps && pnpm lint:check"
+  - "cd frontend-2.0-maps && pnpm format:check"
+  - "cd frontend-2.0-maps && pnpm build"
+  - "cd frontend-2.0-maps && pnpm test"
+
+context_files:
+  - "frontend-2.0-maps/package.json"
+  - "frontend-2.0-maps/readme.md"
+  - "frontend-2.0-maps/tsconfig.json"
+  - "frontend-2.0-maps/.eslintrc.js"
+  - "frontend-2.0-maps/.prettierrc"
+  - "frontend-2.0-maps/webpack.config.js"
+  - "frontend-2.0-maps/src/app/config/esriConfig.js"
+  - "frontend-2.0-maps/src/app/context/"
+
+# Environment configuration
+environment:
+  required_vars:
+    PORTAL_BASE_URL: "/project"
+    WEB_MAP_APP_PORT: "4020"
+    SERVICES_API_URL: "Backend services API"
+    LOCATION_API_URL: "Location service API"
+    NODE_API_URL: "Node service API"
+    DIAGNOSIS_API_URL: "Diagnostics service API"
+    ESRI_API_KEY: "ArcGIS API key"
+    ASSETS_BASE_URL: "Assets CDN URL"
+
+# Running the app
+development:
+  standalone: "pnpm start (http://localhost:4020/project/{project-id}/map)"
+  micro_frontend: "pnpm start:micro"
+  storybook: "pnpm docs:start (http://localhost:6006)"
+
+# Device categories managed
+device_categories:
+  - Anchors: "Indoor positioning system anchors"
+  - Gateways: "Network gateway devices"
+  - Cameras: "Site surveillance cameras"
+  - WeatherStations: "Environmental monitoring devices"
+  - Assets: "Tracked equipment and machinery"
+  - Zones: "Geofenced areas (polygon, rectangle, circle)"
+  - Roads: "Road/path definitions"
+  - Surveys: "Survey data"

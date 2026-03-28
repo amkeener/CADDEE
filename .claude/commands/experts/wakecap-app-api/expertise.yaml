@@ -1,0 +1,244 @@
+# WakeCap App API Expert
+# Mental model for WakeCap's main .NET API
+
+domain_id: "wakecap-app-api-001"
+
+version: "1.0"
+last_updated: "2026-02-05"
+
+overview:
+  description: |
+    Expert in the WakeCap App API - a .NET 8 multi-tenant REST API for workforce and
+    equipment management in construction/industrial projects. Follows Clean Architecture
+    with Domain, Core, Infrastructure, and Web.API layers. Uses Entity Framework Core
+    with PostgreSQL and SQL Server (data warehouse).
+  primary_domain: ".NET Backend API"
+  secondary_domains:
+    - "Clean Architecture / DDD patterns"
+    - "Entity Framework Core with PostgreSQL"
+    - "Multi-tenant architecture"
+    - "JWT authentication"
+    - "AWS S3 file storage"
+    - "Audit logging with Audit.NET"
+
+file_patterns:
+  - "wakecap-app-api/**/*.cs"
+  - "wakecap-app-api/**/*.csproj"
+  - "wakecap-app-api/Wakceap.App.Web.API/**/*"
+  - "wakecap-app-api/Wakecap.App.Core/**/*"
+  - "wakecap-app-api/Wakecap.App.Domain/**/*"
+  - "wakecap-app-api/Wakecap.App.Infrastrcture/**/*"
+  - "wakecap-app-api/Wakecap.App.SharedKernal/**/*"
+  - "wakecap-app-api/Wakecap.MigrationTool/**/*"
+  - "wakecap-app-api/appsettings*.json"
+
+keywords:
+  - dotnet
+  - .net
+  - csharp
+  - c#
+  - api
+  - entity framework
+  - ef core
+  - postgres
+  - postgresql
+  - clean architecture
+  - domain driven design
+  - ddd
+  - equipment
+  - crew
+  - worker
+  - zone
+  - space
+  - permit
+  - verify progress
+  - multi-tenant
+  - jwt
+  - refit
+  - serilog
+
+# Project structure understanding
+project_structure:
+  "Wakceap.App.Web.API":
+    description: "ASP.NET Core Web API - Entry point"
+    contents:
+      Controllers: "REST API controllers"
+      Constant: "API constants"
+      Extentions: "Extension methods and DI setup"
+      Filters: "Action filters"
+      Middlewares: "HTTP middleware"
+      "Program.cs": "Application entry point"
+
+  "Wakecap.App.Core":
+    description: "Business Logic Layer"
+    contents:
+      DomainServices: "Domain-specific business logic"
+      Services: "Application services"
+      Exceptions: "Business exceptions"
+      MQTTServices: "MQTT integration services"
+      Messaging: "Message handling"
+      Proxy: "External service proxies"
+
+  "Wakecap.App.Domain":
+    description: "Domain Model Layer"
+    contents:
+      Entity: "Domain entities"
+      ValueObject: "Value objects"
+      Constant: "Domain constants"
+      Common: "Common domain types"
+      QueryResult: "Query result DTOs"
+      Exceptions: "Domain exceptions"
+      Helpers: "Domain helpers"
+
+  "Wakecap.App.Infrastrcture":
+    description: "Data Access & External Services"
+    contents:
+      Database: "DbContext, ModelConfiguration, Migrations"
+      Connector: "External service connectors"
+      FileSystem: "AWS S3 file storage"
+      RestServices: "Refit-based REST clients"
+      SharedServices: "Shared infrastructure services"
+
+  "Wakecap.App.SharedKernal":
+    description: "Cross-cutting Concerns"
+    contents:
+      DTO: "Data Transfer Objects"
+      Utilities: "Utility functions"
+      Mappers: "Object mappers"
+
+  "Wakecap.MigrationTool":
+    description: "Database migration utilities"
+
+# Technology stack
+tech_stack:
+  framework: ".NET 8"
+  language: "C# 12"
+  web_framework: "ASP.NET Core"
+  database:
+    primary: "PostgreSQL"
+    orm: "Entity Framework Core 8"
+    warehouse: "SQL Server"
+  authentication: "JWT Bearer tokens (Microsoft.AspNetCore.Authentication.JwtBearer)"
+  api_clients: "Refit"
+  logging: "Serilog with Elastic sink"
+  auditing: "Audit.NET with PostgreSQL"
+  apm: "Elastic APM"
+  file_storage: "AWS S3"
+  serialization: "Newtonsoft.Json"
+  api_versioning: "Asp.Versioning.Mvc"
+
+# Key modules and features
+modules:
+  Equipment:
+    description: "Fleet equipment management"
+    features:
+      - "Equipment CRUD with soft delete"
+      - "Inspection tracking and attachments"
+      - "CO2 emission calculations from telemetry"
+      - "GPSGate integration for real-time tracking"
+      - "QR code generation"
+      - "Operator assignment management"
+    endpoints: "/api/v{version}/projects/{projectId}/equipments"
+
+  Crew:
+    description: "Crew management"
+    features:
+      - "Crews and crew types"
+      - "Crew compositions"
+      - "Worker assignments"
+
+  People_Directory:
+    description: "Worker profiles"
+    features:
+      - "Worker profiles"
+      - "Certifications"
+      - "Training records"
+
+  Space_Location:
+    description: "Location management"
+    features:
+      - "Zones"
+      - "Location groups"
+      - "Blueprints"
+
+  VerifyProgress:
+    description: "Project progress tracking"
+    features:
+      - "Progress verification"
+      - "Milestone tracking"
+
+  DigitalPermit:
+    description: "Work permit management"
+    features:
+      - "Permit creation and approval"
+      - "Permit workflows"
+
+# Development workflow
+development_workflow:
+  add_feature:
+    steps:
+      - "Create entity in Domain/Entity/"
+      - "Add EF configuration in Infrastructure/Database/ModelConfiguration/"
+      - "Create migration: dotnet ef migrations add <Name>"
+      - "Add DTOs in SharedKernel/DTO/"
+      - "Create service in Core/Services/"
+      - "Add controller in Web.API/Controllers/"
+      - "Register in WakecapServicesBuilder.cs"
+
+guidelines:
+  - "Follow Clean Architecture layering strictly"
+  - "Domain layer has no external dependencies"
+  - "Use DTOs for API contracts, never expose entities directly"
+  - "All queries go through Infrastructure layer"
+  - "Use Refit interfaces for external REST services"
+  - "Configure EF in ModelConfiguration classes, not fluent API in DbContext"
+  - "Use Serilog for structured logging"
+  - "Include audit logging for data changes"
+  - "Support multi-tenancy in all queries"
+  - "Use API versioning for all endpoints"
+  - "Swagger documentation available at /swagger"
+
+validation_commands:
+  - "cd wakecap-app-api && dotnet restore"
+  - "cd wakecap-app-api && dotnet build"
+  - "cd wakecap-app-api && dotnet test"
+
+context_files:
+  - "wakecap-app-api/README.md"
+  - "wakecap-app-api/Wakceap.App.sln"
+  - "wakecap-app-api/Wakceap.App.Web.API/Wakceap.App.Web.API.csproj"
+  - "wakecap-app-api/Wakceap.App.Web.API/Program.cs"
+  - "wakecap-app-api/Wakceap.App.Web.API/appsettings.json"
+  - "wakecap-app-api/Wakecap.App.Domain/Entity/"
+  - "wakecap-app-api/Wakecap.App.Infrastrcture/Database/"
+
+# EF Core commands
+ef_commands:
+  add_migration: "dotnet ef migrations add <Name> --project Wakecap.App.Infrastrcture --startup-project Wakceap.App.Web.API"
+  update_database: "dotnet ef database update --project Wakecap.App.Infrastrcture --startup-project Wakceap.App.Web.API"
+  list_migrations: "dotnet ef migrations list --project Wakecap.App.Infrastrcture --startup-project Wakceap.App.Web.API"
+
+# Configuration
+configuration:
+  connection_strings:
+    app: "PostgreSQL connection for main database"
+    dwh: "SQL Server connection for data warehouse"
+  appsettings:
+    development: "appsettings.local.json"
+    production: "Environment variables / Azure Key Vault"
+
+# NuGet packages (key dependencies)
+key_packages:
+  - "Microsoft.EntityFrameworkCore 8.0"
+  - "Npgsql.EntityFrameworkCore.PostgreSQL"
+  - "Refit / Refit.HttpClientFactory"
+  - "Serilog.AspNetCore"
+  - "Audit.NET / Audit.WebApi.Core"
+  - "Elastic.Apm.NetCoreAll"
+  - "Asp.Versioning.Mvc"
+  - "Microsoft.AspNetCore.Authentication.JwtBearer"
+
+# Note about typo in project name
+notes:
+  - "Project name has typo: 'Wakceap' instead of 'Wakecap' in Web.API project"
+  - "Infrastructure is misspelled as 'Infrastrcture' - maintain consistency"

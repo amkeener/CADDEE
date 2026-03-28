@@ -1,0 +1,28 @@
+{
+  "routings": [
+    {
+      "plan_id": "plan-01",
+      "feature": "TEST-001: Fix empty index.test.tsx",
+      "expert": "playwright",
+      "reason": "Test file pattern match, Jest test file fix"
+    },
+    {
+      "plan_id": "plan-02",
+      "feature": "TEST-002: Implement ATDD test bodies",
+      "expert": "playwright",
+      "reason": "Acceptance testing, test patterns, ATDD keyword match"
+    },
+    {
+      "plan_id": "plan-03",
+      "feature": "TEST-003: Increase code coverage from 3.5%",
+      "expert": "orchestrator",
+      "reason": "Cross-cutting concern affecting multiple services, no specific test file pattern"
+    },
+    {
+      "plan_id": "plan-04",
+      "feature": "TEST-004: Complete GatewayHealthDSL/SUT implementation",
+      "expert": "playwright",
+      "reason": "Test infrastructure, ATDD DSL pattern, acceptance testing"
+    }
+  ]
+}

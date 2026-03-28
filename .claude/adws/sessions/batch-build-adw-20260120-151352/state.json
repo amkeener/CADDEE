@@ -1,0 +1,20 @@
+{
+  "session_id": "batch-build-adw-20260120-151352",
+  "workflow_type": "batch_build",
+  "status": "completed",
+  "created": "2026-01-20T15:13:52Z",
+  "completed": "2026-01-20T15:20:00Z",
+  "batch_source": "project/specs/batch-adw-20260120-150705/",
+  "plans_total": 6,
+  "plans_completed": 6,
+  "plans_failed": 0,
+  "experts_used": ["arcgis"],
+  "results": [
+    {"plan_id": "plan-01", "status": "complete", "expert": "arcgis"},
+    {"plan_id": "plan-02", "status": "complete", "expert": "arcgis"},
+    {"plan_id": "plan-03", "status": "complete", "expert": "arcgis"},
+    {"plan_id": "plan-04", "status": "complete", "expert": "arcgis"},
+    {"plan_id": "plan-05", "status": "complete", "expert": "arcgis"},
+    {"plan_id": "plan-06", "status": "complete", "expert": "arcgis"}
+  ]
+}

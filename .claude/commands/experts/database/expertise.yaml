@@ -1,0 +1,327 @@
+# Database / Backend Expert
+# Expertise for working with WakeCap backend services and database schemas
+
+domain_id: "database-001"
+version: "1.0"
+last_updated: "2026-01-29"
+
+overview:
+  description: |
+    Expert in WakeCap backend services database schemas, TypeORM migrations,
+    TimescaleDB continuous aggregates, and cross-service data patterns.
+  primary_domain: "Database & Backend Services"
+  secondary_domains:
+    - "TypeORM migrations"
+    - "TimescaleDB/PostgreSQL"
+    - "Cross-service data integration"
+    - "Foreign Data Wrappers (FDW)"
+
+file_patterns:
+  - "**/migrations/*.ts"
+  - "**/models/*.ts"
+  - "**/src/services/**/*.ts"
+  - "**/ormconfig.ts"
+  - "**/*-service/**/*.ts"
+
+keywords:
+  - database
+  - migration
+  - schema
+  - typeorm
+  - postgres
+  - timescale
+  - continuous aggregate
+  - fdw
+  - foreign data wrapper
+  - anchor_scans
+  - location_summary
+  - node
+  - backend
+
+# =============================================================================
+# CRITICAL LEARNINGS - DO NOT IGNORE
+# =============================================================================
+
+critical_rules:
+  - id: "no-index-in-migration-up"
+    severity: "CRITICAL"
+    description: |
+      NEVER include CREATE INDEX statements in migration up() methods.
+      TypeORM's migration runner will fail if indexes are created manually.
+      Instead, use @Index() decorators on model properties.
+    bad_example: |
+      // BAD - breaks TypeORM
+      await queryRunner.query(`CREATE INDEX idx_foo ON table(column);`);
+    good_example: |
+      // GOOD - use decorator in model
+      @Index('idx_foo')
+      @Column()
+      column: string;
+
+  - id: "continuous-aggregate-recreation"
+    severity: "HIGH"
+    description: |
+      TimescaleDB continuous aggregates CANNOT be altered in place.
+      To add columns, you must:
+      1. Remove refresh policies
+      2. DROP the materialized view
+      3. CREATE new view with additional columns
+      4. Add refresh policies back
+      5. Manually refresh historical data
+    example: |
+      // Remove policy first
+      SELECT remove_continuous_aggregate_policy('view_name', if_exists => true);
+      DROP MATERIALIZED VIEW IF EXISTS view_name CASCADE;
+      CREATE MATERIALIZED VIEW view_name WITH (timescaledb.continuous) AS ...
+      SELECT add_continuous_aggregate_policy('view_name', ...);
+      CALL refresh_continuous_aggregate('view_name', start, end);
+
+  - id: "fdw-table-refresh"
+    severity: "MEDIUM"
+    description: |
+      Foreign Data Wrapper tables may need to be re-imported when source
+      schema changes. Check migration history for "reimport_fdw" patterns.
+
+# =============================================================================
+# SERVICE DATABASE SCHEMAS
+# =============================================================================
+
+services:
+  location-service:
+    database: "location_service_db"
+    extensions:
+      - "postgis"
+      - "timescaledb"
+    primary_tables:
+      anchor_scans:
+        description: "Hypertable - raw anchor scan data (TimescaleDB)"
+        key_columns:
+          - "id: int (PK)"
+          - "node_id: int"
+          - "project_id: uuid"
+          - "space_id: int (nullable)"
+          - "local_id: varchar"
+          - "serial_no: varchar"
+          - "location: geometry(Point)"
+          - "installation_quality: float (0-255 scale)"
+          - "voltage: float"
+          - "error_distance: float (meters)"
+          - "error_rate: float"
+          - "travel_time: int (milliseconds) - LATENCY"
+          - "since_last_scan: int"
+          - "is_active: boolean"
+          - "neighbors: jsonb"
+          - "generated_at: timestamp"
+          - "node_type: enum (anchor, gateway)"
+        notes: "TimescaleDB hypertable partitioned by generated_at"
+
+      location_summary:
+        description: "Latest position summary per anchor"
+        key_columns:
+          - "node_id: int (PK)"
+          - "project_id: uuid (PK)"
+          - "location: geometry(Point)"
+          - "optimized_location: geometry(Point)"
+          - "confidence_area: geometry(Polygon)"
+          - "installation_quality: float"
+          - "error_distance: float"
+          - "formatted_neighbors: jsonb"
+          - "gateway_id: varchar"
+
+      asset_scans:
+        description: "Hypertable - worker/asset position data"
+        notes: "Similar structure to anchor_scans for mobile assets"
+
+    continuous_aggregates:
+      anchor_health_hourly:
+        description: "Project-level hourly health metrics"
+        columns:
+          - "bucket: timestamptz"
+          - "project_id: uuid"
+          - "network_id: int"
+          - "online_count: bigint"
+          - "offline_count: bigint"
+          - "total_scans: bigint"
+          - "avg_error_distance: double"
+          - "avg_voltage: double"
+          - "avg_error_rate: double"
+          - "avg_installation_quality: double"
+          - "avg_travel_time: double (TAN-659 - pending)"
+        refresh_policy: "1 hour, 3 hour offset"
+
+      anchor_health_daily:
+        description: "Project-level daily health metrics"
+        refresh_policy: "1 day, 3 day offset"
+
+      anchor_node_health_hourly:
+        description: "Per-anchor hourly metrics (includes travel_time)"
+        columns:
+          - "bucket: timestamptz"
+          - "node_id: int"
+          - "project_id: uuid"
+          - "avg_travel_time: double"
+        notes: "Use for individual anchor history"
+
+      anchor_node_health_daily:
+        description: "Per-anchor daily metrics"
+
+    fdw_tables:
+      - "node (from node-service)"
+      - "anchor_meta (from node-service)"
+      - "zone (from wakecap-app-api)"
+      - "space (from wakecap-app-api)"
+      - "node_diagnostics_summary (from diagnostics-service)"
+
+  node-service:
+    database: "node_service_db"
+    extensions:
+      - "postgis"
+    primary_tables:
+      node:
+        description: "Master node registry"
+        key_columns:
+          - "id: int (PK)"
+          - "network_id: int"
+          - "project_id: uuid"
+          - "serial_no: varchar"
+          - "local_id: varchar"
+          - "node_type: varchar (anchor, gateway, sink, camera, weather_station)"
+          - "version_no: float"
+          - "tenant_id: varchar"
+        notes: "Source of truth for device identity"
+
+      anchor_meta:
+        description: "Anchor-specific metadata with position"
+        key_columns:
+          - "id: int (PK, FK to node.id)"
+          - "space_id: int"
+          - "coordinates: geometry(Point) - APPROVED POSITION"
+          - "is_approved: boolean"
+        notes: "Position here is the approved/configured position"
+
+      network:
+        description: "Project networks"
+        key_columns:
+          - "id: int (PK)"
+          - "project_id: uuid"
+          - "tenant_id: varchar"
+
+    audit_tables:
+      - "anchor_meta_audit"
+      - "node_audit"
+      - "camera_meta_audit"
+      - "sink_meta_audit"
+
+  diagnostics-service:
+    database: "diagnostics_service_db"
+    notes: "Gateway diagnostics and health metrics"
+    primary_tables:
+      gateway_device_diagnostics:
+        description: "Gateway health and connectivity"
+
+# =============================================================================
+# CROSS-SERVICE DATA PATTERNS
+# =============================================================================
+
+data_ownership:
+  - field: "position (lat/lon) - approved"
+    owner: "node-service"
+    table: "anchor_meta.coordinates"
+    notes: "User-configured/approved position"
+
+  - field: "position (lat/lon) - calculated"
+    owner: "location-service"
+    table: "anchor_scans.location or location_summary.location"
+    notes: "Position engine calculated position"
+
+  - field: "is_approved"
+    owner: "node-service"
+    table: "anchor_meta.is_approved"
+
+  - field: "serial_no, local_id"
+    owner: "node-service"
+    table: "node"
+    notes: "Denormalized to anchor_scans for query efficiency"
+
+  - field: "zone boundaries"
+    owner: "wakecap-app-api"
+    table: "zones (accessed via FDW)"
+
+  - field: "health metrics (IQ, error_distance, voltage)"
+    owner: "location-service"
+    table: "anchor_scans, location_summary"
+
+  - field: "travel_time / latency"
+    owner: "location-service"
+    table: "anchor_scans.travel_time"
+    notes: "Milliseconds from anchor to gateway"
+
+# =============================================================================
+# MIGRATION PATTERNS
+# =============================================================================
+
+migration_patterns:
+  location-service:
+    orm: "TypeORM 0.3"
+    file_pattern: "src/migrations/{timestamp}-{name}.ts"
+    export_pattern: |
+      // In migrations/index.ts
+      export {default as migrationName1234567890} from './1234567890-migration_name';
+    run_command: "make shell service=node cmd=\"npm run migrate\""
+    rollback_command: "make shell service=node cmd=\"npm run rollback\""
+
+  node-service:
+    orm: "TypeORM 0.3"
+    file_pattern: "src/migrations/{timestamp}-{name}.ts"
+    run_command: "npm run migrate"
+    rollback_command: "npm run rollback"
+
+# =============================================================================
+# TIMESCALEDB SPECIFIC
+# =============================================================================
+
+timescaledb:
+  hypertables:
+    - "anchor_scans (partitioned by generated_at)"
+    - "asset_scans (partitioned by generated_at)"
+
+  continuous_aggregate_best_practices:
+    - "Use WITH NO DATA when creating, then refresh manually"
+    - "Always add refresh policies after creation"
+    - "Use CALL refresh_continuous_aggregate() for backfill"
+    - "Aggregates cannot be altered - must drop and recreate"
+    - "Use weighted averages: SUM(col * weight) / NULLIF(SUM(weight), 0)"
+
+  weekly_bucketing:
+    description: "Use origin parameter for Monday-aligned weeks"
+    example: "time_bucket('7 days', bucket, '2024-01-01'::date)"
+
+# =============================================================================
+# VALIDATION & COMMANDS
+# =============================================================================
+
+validation_commands:
+  - "cd location-service && npm run build"
+  - "cd node-service && npm run build"
+
+context_files:
+  - "location-service/src/models/"
+  - "location-service/src/migrations/"
+  - "node-service/src/models/"
+  - "location-service/CLAUDE.md"
+  - "node-service/CLAUDE.md"
+
+linear_knowledge_hubs:
+  - "TAN-531: Database Schema - Cross-service data, migrations"
+  - "TAN-519: V2 KPI endpoints with weighted averages"
+  - "TAN-520: Monday-aligned weekly buckets"
+  - "TAN-659: Add travel_time to project-level aggregates"
+
+guidelines:
+  - "Always check data ownership before adding fields"
+  - "Use FDW for cross-service reads, not direct DB access"
+  - "Never create indexes in migration up() - use @Index decorators"
+  - "Continuous aggregates must be dropped and recreated to modify"
+  - "Include manual refresh for historical data in aggregate migrations"
+  - "Test migrations in local Docker environment before deployment"
+  - "Check migration index.ts exports after creating new migrations"

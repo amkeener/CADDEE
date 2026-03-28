@@ -1,0 +1,176 @@
+# Frontend Expert
+# Mental model for React/TypeScript frontend development with linting and formatting
+
+# Unique identifier for unambiguous routing
+domain_id: "frontend-001"
+
+version: "1.0"
+last_updated: "2026-02-01"
+
+overview:
+  description: |
+    Expert in React/TypeScript frontend development with focus on code quality,
+    linting, formatting, and build processes. Ensures code passes CI checks before
+    committing and creating PRs.
+  primary_domain: "React/TypeScript Frontend Development"
+  secondary_domains:
+    - "ESLint configuration and rules"
+    - "Prettier formatting"
+    - "Build and bundling (Webpack)"
+    - "Testing (Jest, Playwright)"
+    - "Single-SPA micro-frontends"
+
+file_patterns:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.css"
+  - "**/*.scss"
+  - "package.json"
+  - ".eslintrc*"
+  - ".prettierrc*"
+  - "tsconfig.json"
+  - "webpack.config.*"
+  - "jest.config.*"
+  - "playwright.config.*"
+
+keywords:
+  - frontend
+  - react
+  - typescript
+  - eslint
+  - prettier
+  - lint
+  - format
+  - webpack
+  - jest
+  - playwright
+  - component
+  - hook
+  - tsx
+  - jsx
+  - css
+  - styling
+  - tailwind
+  - single-spa
+
+# Pre-commit checks - CRITICAL for CI success
+pre_commit_checks:
+  required:
+    - name: "Lint Check"
+      command: "pnpm lint:check"
+      description: "Runs ESLint to check for code quality issues"
+      fix_command: "pnpm lint:fix || true"  # Some projects have lint:fix
+
+    - name: "Format Check"
+      command: "pnpm format:check"
+      description: "Runs Prettier to check code formatting"
+      fix_command: "pnpm format:write"
+
+    - name: "TypeScript Check"
+      command: "pnpm tsc --noEmit"
+      description: "Type-checks without emitting files"
+      fix_command: null  # Must be fixed manually
+
+  recommended:
+    - name: "Unit Tests"
+      command: "pnpm test"
+      description: "Runs Jest unit tests"
+
+    - name: "Build"
+      command: "pnpm build"
+      description: "Production build to catch build errors"
+
+# Common lint rules and their fixes
+eslint_rules:
+  no_console:
+    description: "Unexpected console statement"
+    severity: "warning"
+    fix: "Remove console.log or use proper logging service"
+
+  no_unused_vars:
+    description: "Variable is defined but never used"
+    severity: "error"
+    fix: "Remove unused variable or prefix with underscore (_unused)"
+
+  prefer_const:
+    description: "Variable is never reassigned, use const"
+    severity: "warning"
+    fix: "Change let to const"
+
+# Prettier configuration awareness
+prettier_config:
+  description: |
+    Most frontend projects use Prettier for consistent formatting.
+    Configuration is typically in .prettierrc or package.json.
+  common_issues:
+    - issue: "Trailing commas"
+      check: "Run format:check to see diff"
+    - issue: "Quote style (single vs double)"
+      check: "Check .prettierrc for quoteProps setting"
+    - issue: "Line length"
+      check: "Default is 80, some projects use 100 or 120"
+
+# CI/CD awareness
+ci_checks:
+  github_actions:
+    - "lint:check - Must pass with 0 errors (warnings OK)"
+    - "format:check - Must pass (no formatting issues)"
+    - "build - Must complete successfully"
+    - "test - Should pass (document skipped tests)"
+
+  common_failures:
+    prettier_formatting:
+      symptom: "Code style issues found in X files"
+      fix: "pnpm format:write <files>"
+
+    eslint_errors:
+      symptom: "X problems (Y errors, Z warnings)"
+      fix: "Fix errors (warnings can remain)"
+
+    typescript_errors:
+      symptom: "TS2xxx: error message"
+      fix: "Fix type errors manually"
+
+guidelines:
+  - "ALWAYS run format:check before committing frontend code"
+  - "ALWAYS run lint:check before committing frontend code"
+  - "Fix lint errors; warnings can be left for pre-existing code"
+  - "Use 'twap-' prefix for Tailwind classes in anchor-planner"
+  - "Follow existing patterns in the codebase"
+  - "Add proper TypeScript types, avoid 'any'"
+  - "Use cn() utility for conditional classNames"
+
+validation_commands:
+  - "pnpm lint:check"
+  - "pnpm format:check"
+  - "pnpm tsc --noEmit"
+  - "pnpm test"
+  - "pnpm build"
+
+# Auto-fix workflow
+auto_fix_workflow:
+  description: |
+    When lint or format checks fail, follow this sequence:
+    1. Run format:write to fix formatting issues
+    2. Run lint:fix (if available) for auto-fixable lint issues
+    3. Manually fix remaining lint errors
+    4. Re-run checks to verify
+  commands:
+    - step: 1
+      command: "pnpm format:write"
+      description: "Auto-fix all Prettier formatting issues"
+    - step: 2
+      command: "pnpm lint:check 2>&1 | grep -E 'error|warning' | head -20"
+      description: "Show remaining lint issues"
+    - step: 3
+      command: "pnpm format:check && pnpm lint:check"
+      description: "Verify all checks pass"
+
+context_files:
+  - "package.json"
+  - ".eslintrc.js"
+  - ".prettierrc"
+  - "tsconfig.json"
+  - "webpack.config.js"

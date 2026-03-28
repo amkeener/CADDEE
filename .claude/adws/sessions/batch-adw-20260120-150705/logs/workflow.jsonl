@@ -1,0 +1,9 @@
+{"timestamp": "2026-01-20T15:07:05Z", "event_type": "session_start", "workflow": "batch_plan_adw", "task_count": 6}
+{"timestamp": "2026-01-20T15:07:05Z", "event_type": "expert_routed", "plan_id": "plan-01", "expert": "arcgis", "reason": "GIS layer migration"}
+{"timestamp": "2026-01-20T15:07:05Z", "event_type": "expert_routed", "plan_id": "plan-02", "expert": "arcgis", "reason": "WMTS/raster layer migration"}
+{"timestamp": "2026-01-20T15:07:05Z", "event_type": "expert_routed", "plan_id": "plan-03", "expert": "arcgis", "reason": "Point layer with popups"}
+{"timestamp": "2026-01-20T15:07:05Z", "event_type": "expert_routed", "plan_id": "plan-04", "expert": "arcgis", "reason": "Polygon layer with renderers"}
+{"timestamp": "2026-01-20T15:07:05Z", "event_type": "expert_routed", "plan_id": "plan-05", "expert": "arcgis", "reason": "Complex point layer with filtering"}
+{"timestamp": "2026-01-20T15:07:05Z", "event_type": "expert_routed", "plan_id": "plan-06", "expert": "arcgis", "reason": "Heatmap visualization evaluation"}
+{"timestamp": "2026-01-20T15:12:00Z", "event_type": "plans_created", "count": 6, "plan_ids": ["plan-01", "plan-02", "plan-03", "plan-04", "plan-05", "plan-06"]}
+{"timestamp": "2026-01-20T15:12:00Z", "event_type": "session_end", "status": "completed", "plan_count": 6}

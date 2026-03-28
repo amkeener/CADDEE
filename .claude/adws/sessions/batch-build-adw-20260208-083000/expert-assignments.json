@@ -1,0 +1,10 @@
+{
+  "assignments": [
+    {
+      "plan_id": "plan-02",
+      "plan_path": "project/specs/batch-adw-20260208-080342/plan-02-gateway-health-imbalance.md",
+      "expert": "frontend-2.0",
+      "priority": "P1"
+    }
+  ]
+}

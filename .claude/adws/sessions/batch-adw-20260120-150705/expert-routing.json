@@ -1,0 +1,10 @@
+{
+  "routings": [
+    {"plan_id": "plan-01", "feature": "ML-001: Migrate createProposedAnchorsLayer to MapLibre", "expert": "arcgis", "reason": "GIS layer migration, map layer architecture"},
+    {"plan_id": "plan-02", "feature": "ML-002: Migrate createDroneDeployLayer to MapLibre", "expert": "arcgis", "reason": "WMTS/raster layer migration"},
+    {"plan_id": "plan-03", "feature": "ML-003: Migrate createGatewayLayer to MapLibre", "expert": "arcgis", "reason": "Point layer with popups and events"},
+    {"plan_id": "plan-04", "feature": "ML-004: Migrate createZonesLayer to MapLibre", "expert": "arcgis", "reason": "Polygon layer with complex renderers"},
+    {"plan_id": "plan-05", "feature": "ML-005: Migrate createBeaconLayer to MapLibre", "expert": "arcgis", "reason": "Complex point layer with floor filtering"},
+    {"plan_id": "plan-06", "feature": "ML-006: Evaluate MapLibre native heatmap for RSSI", "expert": "arcgis", "reason": "Heatmap visualization evaluation"}
+  ]
+}

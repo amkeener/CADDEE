@@ -1,0 +1,224 @@
+# Location Service Expert
+# Mental model for WakeCap's positioning and location data service
+
+domain_id: "location-service-001"
+
+version: "1.0"
+last_updated: "2026-02-05"
+
+overview:
+  description: |
+    Expert in the WakeCap location service - a Node.js/TypeScript backend for receiving,
+    processing, and storing location/positioning data for anchors and assets. Integrates
+    with the positioning engine, stores data in TimescaleDB hypertables, and provides
+    APIs for location summaries, health metrics, and historical data.
+  primary_domain: "Location & Positioning Data"
+  secondary_domains:
+    - "TimescaleDB time-series storage"
+    - "Continuous aggregates (hourly/daily health metrics)"
+    - "Positioning engine integration"
+    - "PostGIS spatial data"
+    - "AWS SQS message processing"
+    - "Foreign Data Wrappers (FDW)"
+
+file_patterns:
+  - "location-service/**/*.ts"
+  - "location-service/**/*.js"
+  - "location-service/src/models/**/*.ts"
+  - "location-service/src/migration/**/*.ts"
+  - "location-service/src/api/**/*.ts"
+  - "location-service/src/repositories/**/*.ts"
+  - "location-service/src/services/**/*.ts"
+  - "location-service/package.json"
+  - "location-service/tsconfig.json"
+  - "location-service/.eslintrc.js"
+
+keywords:
+  - location
+  - positioning
+  - anchor
+  - asset
+  - anchor_scans
+  - asset_scans
+  - location_summary
+  - timescale
+  - timescaledb
+  - continuous aggregate
+  - hypertable
+  - postgis
+  - geometry
+  - coordinates
+  - installation quality
+  - error distance
+  - travel time
+  - latency
+  - fdw
+  - health metrics
+
+# Project structure understanding
+project_structure:
+  src:
+    api: "REST API controllers and routes"
+    configs: "Database, Redis, and service configuration"
+    connectors: "AWS IoT/SQS connector integration"
+    dtos: "Data Transfer Objects"
+    factories: "Factory patterns for object creation"
+    handlers: "Message handlers for location data"
+    interfaces: "TypeScript interfaces"
+    migration: "TypeORM database migrations"
+    models: "TypeORM entity models"
+    pipeline: "Data processing pipeline"
+    proto: "Protocol buffer definitions"
+    repositories: "Data access layer"
+    services: "Business logic services"
+    types: "TypeScript type definitions"
+    utilities: "Utility functions and helpers"
+  test: "Mocha/Chai test files"
+  docker: "Docker configuration"
+
+# Technology stack
+tech_stack:
+  runtime: "Node.js >= 16.0.0"
+  language: "TypeScript"
+  framework: "Express with @decorators/express"
+  database:
+    primary: "TimescaleDB (PostgreSQL with time-series extensions)"
+    spatial: "PostGIS extension"
+    orm: "TypeORM 0.2.29"
+  extensions:
+    - "postgis"
+    - "timescaledb"
+  messaging:
+    mqtt: "@wakecaptech/connector for AWS IoT"
+    queue: "sqs-consumer for AWS SQS"
+    cache: "Redis"
+  positioning: "@wakecaptech/positioning-engine"
+  testing: "Mocha + Chai + Sinon + nyc (coverage)"
+
+# Database schema (critical knowledge)
+database_schema:
+  hypertables:
+    anchor_scans:
+      description: "Raw anchor scan data - partitioned by generated_at"
+      key_columns:
+        - "id: int (PK)"
+        - "node_id: int"
+        - "project_id: uuid"
+        - "space_id: int (nullable)"
+        - "local_id: varchar"
+        - "serial_no: varchar"
+        - "location: geometry(Point)"
+        - "installation_quality: float (0-255)"
+        - "voltage: float"
+        - "error_distance: float (meters)"
+        - "error_rate: float"
+        - "travel_time: int (milliseconds - latency)"
+        - "since_last_scan: int"
+        - "is_active: boolean"
+        - "neighbors: jsonb"
+        - "generated_at: timestamp"
+        - "node_type: enum (anchor, gateway)"
+    asset_scans:
+      description: "Worker/asset position data - similar structure"
+
+  summary_tables:
+    location_summary:
+      description: "Latest position summary per anchor"
+      key_columns:
+        - "node_id: int (PK)"
+        - "project_id: uuid (PK)"
+        - "location: geometry(Point)"
+        - "optimized_location: geometry(Point)"
+        - "confidence_area: geometry(Polygon)"
+        - "installation_quality: float"
+        - "error_distance: float"
+        - "formatted_neighbors: jsonb"
+        - "gateway_id: varchar"
+
+  continuous_aggregates:
+    anchor_health_hourly:
+      description: "Project-level hourly health metrics"
+      refresh_policy: "1 hour, 3 hour offset"
+    anchor_health_daily:
+      description: "Project-level daily health metrics"
+      refresh_policy: "1 day, 3 day offset"
+    anchor_node_health_hourly:
+      description: "Per-anchor hourly metrics"
+    anchor_node_health_daily:
+      description: "Per-anchor daily metrics"
+
+  fdw_tables:
+    - "node (from node-service)"
+    - "anchor_meta (from node-service)"
+    - "zone (from wakecap-app-api)"
+    - "space (from wakecap-app-api)"
+    - "node_diagnostics_summary (from diagnostics-service)"
+
+# Critical rules for this service
+critical_rules:
+  - id: "no-index-in-migration-up"
+    severity: "CRITICAL"
+    description: |
+      NEVER include CREATE INDEX statements in migration up() methods.
+      TypeORM's migration runner will fail. Use @Index() decorators instead.
+    bad_example: "await queryRunner.query(`CREATE INDEX idx_foo ON table(column);`);"
+    good_example: "@Index('idx_foo') @Column() column: string;"
+
+  - id: "continuous-aggregate-recreation"
+    severity: "HIGH"
+    description: |
+      TimescaleDB continuous aggregates CANNOT be altered in place.
+      To modify, you must: 1) Remove refresh policies, 2) DROP view,
+      3) CREATE new view, 4) Add refresh policies, 5) Refresh historical data.
+
+  - id: "fdw-table-refresh"
+    severity: "MEDIUM"
+    description: |
+      Foreign Data Wrapper tables may need re-import when source schema changes.
+
+  - id: "weighted-averages"
+    severity: "MEDIUM"
+    description: |
+      For accurate project-level averages from hourly data, use weighted averages:
+      SUM(col * weight) / NULLIF(SUM(weight), 0)
+
+guidelines:
+  - "Use TypeORM migrations for all schema changes"
+  - "NEVER create indexes in migration up() - use @Index decorators"
+  - "Continuous aggregates must be dropped and recreated to modify"
+  - "Use time_bucket() for TimescaleDB aggregations"
+  - "Include manual refresh for historical data when modifying aggregates"
+  - "Use weighted averages for project-level metrics from hourly data"
+  - "Test migrations in local Docker environment first"
+  - "Log with @wakecaptech/wakecap-logger for structured logging"
+  - "Run lint:fix before committing"
+
+validation_commands:
+  - "cd location-service && npm run lint"
+  - "cd location-service && npm run build"
+  - "cd location-service && npm run test"
+
+context_files:
+  - "location-service/package.json"
+  - "location-service/README.md"
+  - "location-service/src/configs/db-config.ts"
+  - "location-service/src/models/"
+  - "location-service/src/migration/"
+  - "location-service/.eslintrc.js"
+
+# Migration patterns
+migration_patterns:
+  orm: "TypeORM 0.2"
+  file_pattern: "src/migration/{timestamp}-{name}.ts"
+  export_pattern: |
+    // In migrations/index.ts
+    export {default as migrationName1234567890} from './1234567890-migration_name';
+  run_command: "make shell service=node cmd=\"npm run migrate\""
+  rollback_command: "make shell service=node cmd=\"npm run rollback\""
+
+# Related Linear issues for reference
+linear_references:
+  - "TAN-531: Database Schema - Cross-service data, migrations"
+  - "TAN-519: V2 KPI endpoints with weighted averages"
+  - "TAN-520: Monday-aligned weekly buckets"
+  - "TAN-659: Add travel_time to project-level aggregates"

@@ -1,0 +1,152 @@
+# Diagnostics Service Expert
+# Mental model for WakeCap IoT diagnostics and telemetry service
+
+domain_id: "diagnostics-service-001"
+
+version: "1.0"
+last_updated: "2026-02-05"
+
+overview:
+  description: |
+    Expert in the WakeCap diagnostics service - a Node.js/TypeScript backend for collecting,
+    processing, and storing IoT device diagnostics data. Handles gateway status, CPU/memory
+    metrics, traffic data, neighbor information, and boot diagnostics from MQTT broker.
+  primary_domain: "IoT Diagnostics & Telemetry"
+  secondary_domains:
+    - "TimescaleDB time-series storage"
+    - "MQTT/AWS IoT integration"
+    - "Protocol buffers (protobuf)"
+    - "Redis caching"
+    - "SQS message processing"
+
+file_patterns:
+  - "diagnostics-service/**/*.ts"
+  - "diagnostics-service/**/*.js"
+  - "diagnostics-service/src/entity/**/*.ts"
+  - "diagnostics-service/src/migration/**/*.ts"
+  - "diagnostics-service/src/savers/**/*.ts"
+  - "diagnostics-service/src/proto/**/*.proto"
+  - "diagnostics-service/src/diagnostics-types/**/*.ts"
+  - "diagnostics-service/package.json"
+  - "diagnostics-service/tsconfig.json"
+  - "diagnostics-service/.eslintrc.js"
+
+keywords:
+  - diagnostics
+  - gateway
+  - telemetry
+  - mqtt
+  - iot
+  - timescale
+  - timescaledb
+  - protobuf
+  - protocol buffers
+  - sqs
+  - redis
+  - pipeline
+  - saver
+  - metrics
+  - cpu
+  - memory
+  - traffic
+  - neighbor
+  - boot
+  - wirepass
+
+# Project structure understanding
+project_structure:
+  src:
+    api: "REST API controllers and routes"
+    config: "Database, Redis, and service configuration"
+    connector: "AWS IoT/MQTT connector integration"
+    database: "Database connection and utilities"
+    diagnostics-types: "Type definitions for different diagnostic message types"
+    entity: "TypeORM entity models for TimescaleDB"
+    handlers: "Message handlers for different diagnostic types"
+    interfaces: "TypeScript interfaces"
+    migration: "TypeORM database migrations"
+    pipeline: "Data processing pipeline (receives, transforms, saves)"
+    proto: "Protocol buffer definitions and compiled JS"
+    savers: "Data persistence layer for diagnostics"
+    types: "TypeScript type definitions"
+    utils: "Utility functions and helpers"
+    validators: "Joi validation schemas"
+  tests: "Mocha/Chai test files"
+  docker: "Docker configuration"
+
+# Technology stack
+tech_stack:
+  runtime: "Node.js >= 16.0.0"
+  language: "TypeScript"
+  framework: "Express with @decorators/express"
+  database:
+    primary: "TimescaleDB (PostgreSQL with time-series extensions)"
+    orm: "TypeORM 0.2.29"
+  messaging:
+    mqtt: "@wakecaptech/connector for AWS IoT"
+    queue: "sqs-consumer for AWS SQS"
+    cache: "Redis"
+  serialization: "Protocol Buffers (protobufjs)"
+  testing: "Mocha + Chai + Sinon"
+
+# Diagnostics message types handled
+diagnostics_types:
+  - name: "Gateway Status"
+    description: "Gateway online/offline status and connectivity"
+  - name: "Gateway Buffered Data"
+    description: "Buffered data counts from gateways"
+  - name: "Gateway CPU/Memory"
+    description: "Resource utilization metrics"
+  - name: "Traffic"
+    description: "Network traffic statistics"
+  - name: "Neighbor"
+    description: "Neighbor device discovery data"
+  - name: "Node"
+    description: "Node-level diagnostic information"
+  - name: "Boot"
+    description: "Device boot events and firmware versions"
+
+guidelines:
+  - "Use TypeORM migrations for all schema changes"
+  - "TimescaleDB hypertables for time-series data - use time_bucket() for aggregations"
+  - "Follow the pipeline pattern: receive -> transform -> save"
+  - "Use protocol buffers for message serialization from devices"
+  - "Handle messages gracefully - devices may send malformed data"
+  - "Log with @wakecaptech/wakecap-logger for structured logging"
+  - "Test with Mocha/Chai, use Sinon for mocks"
+  - "Run lint:fix before committing"
+  - "Entity changes require corresponding migration"
+
+validation_commands:
+  - "cd diagnostics-service && npm run lint"
+  - "cd diagnostics-service && npm run build"
+  - "cd diagnostics-service && npm run test"
+
+context_files:
+  - "diagnostics-service/package.json"
+  - "diagnostics-service/README.md"
+  - "diagnostics-service/src/config/db-config.ts"
+  - "diagnostics-service/src/pipeline.ts"
+  - "diagnostics-service/src/entity/"
+  - "diagnostics-service/src/migration/"
+  - "diagnostics-service/.eslintrc.js"
+
+# Critical patterns and rules
+critical_rules:
+  - id: "timescale-hypertables"
+    severity: "HIGH"
+    description: |
+      TimescaleDB hypertables require special handling. Use time_bucket() for
+      aggregations and ensure timestamp columns are properly indexed.
+
+  - id: "typeorm-migrations"
+    severity: "HIGH"
+    description: |
+      All database schema changes must go through TypeORM migrations.
+      Run migrate command: make shell service=node cmd="npm run migrate"
+
+  - id: "protobuf-compilation"
+    severity: "MEDIUM"
+    description: |
+      Protocol buffer definitions in src/proto/ need compilation.
+      JSON definitions are also maintained for compatibility.

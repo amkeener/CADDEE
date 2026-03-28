@@ -1,0 +1,9 @@
+{"timestamp": "2026-01-20T15:13:52Z", "event_type": "session_start", "workflow": "batch_build_adw", "batch_source": "project/specs/batch-adw-20260120-150705/"}
+{"timestamp": "2026-01-20T15:13:52Z", "event_type": "plans_selected", "count": 6, "plan_ids": ["plan-01", "plan-02", "plan-03", "plan-04", "plan-05", "plan-06"]}
+{"timestamp": "2026-01-20T15:20:00Z", "event_type": "build_complete", "plan_id": "plan-01", "status": "success", "expert": "arcgis"}
+{"timestamp": "2026-01-20T15:20:00Z", "event_type": "build_complete", "plan_id": "plan-02", "status": "success", "expert": "arcgis"}
+{"timestamp": "2026-01-20T15:20:00Z", "event_type": "build_complete", "plan_id": "plan-03", "status": "success", "expert": "arcgis"}
+{"timestamp": "2026-01-20T15:20:00Z", "event_type": "build_complete", "plan_id": "plan-04", "status": "success", "expert": "arcgis"}
+{"timestamp": "2026-01-20T15:20:00Z", "event_type": "build_complete", "plan_id": "plan-05", "status": "success", "expert": "arcgis"}
+{"timestamp": "2026-01-20T15:20:00Z", "event_type": "build_complete", "plan_id": "plan-06", "status": "success", "expert": "arcgis"}
+{"timestamp": "2026-01-20T15:20:00Z", "event_type": "session_end", "status": "completed", "success_count": 6, "fail_count": 0}

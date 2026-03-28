@@ -1,0 +1,25 @@
+{
+  "session_id": "adw-build-20260120-123323",
+  "workflow_type": "build",
+  "status": "completed",
+  "expert_used": "python_tooling",
+  "plan_path": "project/specs/plan/completed/plan-adw-playwright-implementation.md",
+  "linked_plan_session": "adw-plan-20260120-123030",
+  "created_at": "2026-01-20T12:33:23Z",
+  "completed_at": "2026-01-20T12:40:00Z",
+  "files_created": [
+    ".claude/commands/experts/playwright/expertise.yaml",
+    ".claude/playwright/__init__.py",
+    ".claude/playwright/config.py",
+    ".claude/playwright/data_types.py",
+    ".claude/playwright/fixtures.py",
+    ".claude/playwright/operations.py",
+    ".claude/playwright/page_objects/__init__.py",
+    ".claude/playwright/page_objects/base_page.py",
+    ".claude/playwright/page_objects/map_page.py"
+  ],
+  "validation_results": {
+    "python_syntax": "passed",
+    "expert_yaml": "passed"
+  }
+}

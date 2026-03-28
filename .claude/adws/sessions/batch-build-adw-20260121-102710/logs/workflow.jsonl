@@ -1,0 +1,2 @@
+{"timestamp": "2026-01-21T07:27:10Z", "event_type": "session_start", "workflow": "batch_build_adw", "batch_source": "project/specs/batch-adw-20260121-102710"}
+{"timestamp": "2026-01-21T07:32:57Z", "event_type": "agents_spawned", "agents": ["plan-01", "plan-02", "plan-03"]}

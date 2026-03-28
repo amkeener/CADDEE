@@ -1,0 +1,10 @@
+{
+  "assignments": [
+    {"plan_id": "plan-01", "plan_path": "project/specs/batch-adw-20260120-150705/plan-01-proposed-anchors-layer.md", "expert": "arcgis", "priority": "P2"},
+    {"plan_id": "plan-02", "plan_path": "project/specs/batch-adw-20260120-150705/plan-02-drone-deploy-layer.md", "expert": "arcgis", "priority": "P2"},
+    {"plan_id": "plan-03", "plan_path": "project/specs/batch-adw-20260120-150705/plan-03-gateway-layer.md", "expert": "arcgis", "priority": "P2"},
+    {"plan_id": "plan-04", "plan_path": "project/specs/batch-adw-20260120-150705/plan-04-zones-layer.md", "expert": "arcgis", "priority": "P2"},
+    {"plan_id": "plan-05", "plan_path": "project/specs/batch-adw-20260120-150705/plan-05-beacon-layer.md", "expert": "arcgis", "priority": "P2"},
+    {"plan_id": "plan-06", "plan_path": "project/specs/batch-adw-20260120-150705/plan-06-rssi-heatmap-evaluation.md", "expert": "arcgis", "priority": "P3"}
+  ]
+}

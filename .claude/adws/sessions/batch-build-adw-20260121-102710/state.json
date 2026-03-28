@@ -1,0 +1,11 @@
+{
+  "session_id": "batch-build-adw-20260121-102710",
+  "workflow_type": "batch_build",
+  "status": "initializing",
+  "created": "2026-01-21T07:27:10Z",
+  "batch_source": "project/specs/batch-adw-20260121-102710",
+  "plans_total": 3,
+  "plans_completed": 0,
+  "plans_failed": 0,
+  "experts_used": []
+}

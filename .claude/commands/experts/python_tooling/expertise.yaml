@@ -1,0 +1,102 @@
+# Python Tooling Expert
+# Mental model for automation and scripting
+
+# Unique identifier for unambiguous routing
+domain_id: "python-tools-001"
+
+version: "1.0"
+last_updated: "2024-01-01"
+
+overview:
+  description: |
+    Expert in Python tooling and automation.
+    Handles Claude Code hooks, automation scripts, and session management.
+  primary_domain: "Python scripting and tooling"
+  secondary_domains:
+    - "Claude Code hooks"
+    - "Automation scripts"
+    - "uv package management"
+    - "JSONL/session logging"
+  key_files:
+    - .claude/hooks/pre_tool_use.py
+    - .claude/hooks/stop.py
+    - .claude/scripts/generate_session_summary.py
+
+file_patterns:
+  - ".claude/hooks/**/*.py"
+  - ".claude/scripts/*.py"
+  - "scripts/**/*.py"
+
+keywords:
+  - hook
+  - script
+  - automation
+  - python
+  - logging
+  - uv
+  - session
+
+hook_types:
+  pre_tool_use: "Block dangerous commands (rm -rf, .env access)"
+  post_tool_use: "Log tool usage to session directory"
+  user_prompt_submit: "Log/validate user prompts"
+  stop: "Generate session summary, copy transcripts"
+  subagent_stop: "Log subagent completion, copy transcripts"
+
+hook_patterns:
+  input:
+    description: "Read JSON from stdin"
+    example: "input_data = json.load(sys.stdin)"
+  output:
+    description: "Exit 0 (allow) or 2 (block with message)"
+    example: "sys.exit(0)  # or sys.exit(2)"
+  logging:
+    description: "Use ensure_session_log_dir from utils.constants"
+    example: "log_dir = ensure_session_log_dir(session_id)"
+  graceful:
+    description: "Catch all exceptions, exit 0"
+    reason: "Never block user workflow on hook errors"
+
+inline_script_template: |
+  #!/usr/bin/env -S uv run --script
+  # /// script
+  # requires-python = ">=3.8"
+  # dependencies = []
+  # ///
+  import sys
+  import json
+  from utils.constants import ensure_session_log_dir
+
+  def main():
+      try:
+          input_data = json.load(sys.stdin)
+          session_id = input_data.get('session_id', 'unknown')
+          log_dir = ensure_session_log_dir(session_id)
+          sys.exit(0)
+      except Exception:
+          sys.exit(0)
+
+  if __name__ == "__main__":
+      main()
+
+guidelines:
+  dependencies:
+    - "Use inline script dependencies with uv (PEP 723)"
+    - "Prefer standard library - most hooks use no deps"
+    - "Use >=3.8 for hooks, >=3.11 for scripts with deps"
+  error_handling:
+    - "Handle errors gracefully (exit 0 unless blocking)"
+    - "Log to session directories via utils.constants"
+  code_style:
+    - "Use pathlib for paths"
+    - "Use dataclasses for data models"
+    - "Type hint public functions"
+    - "Import from utils.constants for session logging"
+
+validation_commands:
+  - "python3 -m py_compile {file}"
+  - "uv run {script}"
+
+context_files:
+  - ".claude/hooks/utils/constants.py"
+  - ".claude/settings.json"

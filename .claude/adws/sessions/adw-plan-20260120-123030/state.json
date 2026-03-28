@@ -1,0 +1,11 @@
+{
+  "session_id": "adw-plan-20260120-123030",
+  "workflow_type": "plan",
+  "status": "completed",
+  "expert_used": "python_tooling",
+  "plan_path": "project/specs/plan/plan-adw-playwright-implementation.md",
+  "created_at": "2026-01-20T12:30:30Z",
+  "completed_at": "2026-01-20T12:35:00Z",
+  "reference_project": "../AgenticTesting",
+  "notes": "Plan for integrating Playwright testing with canvas/map handling patterns from AgenticTesting"
+}

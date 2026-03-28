@@ -1,0 +1,10 @@
+{
+  "session_id": "adw-research-20260208-080342",
+  "workflow_type": "research",
+  "status": "completed",
+  "created": "2026-02-08T08:03:42Z",
+  "completed": "2026-02-08T08:19:00Z",
+  "expert": "research",
+  "topic": "CBMAC TX Delivery Rate Investigation",
+  "report": "project/research/cbmac-tx-delivery-investigation.md"
+}

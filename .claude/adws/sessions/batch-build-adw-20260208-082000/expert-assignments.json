@@ -1,0 +1,10 @@
+{
+  "assignments": [
+    {
+      "plan_id": "plan-01",
+      "plan_path": "project/specs/batch-adw-20260208-080342/plan-01-latency-formula-display.md",
+      "expert": "frontend-2.0",
+      "priority": "P1"
+    }
+  ]
+}

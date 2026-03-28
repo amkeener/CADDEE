@@ -1,0 +1,17 @@
+{
+  "session_id": "batch-adw-20260120-150705",
+  "workflow_type": "batch_plan",
+  "status": "completed",
+  "created": "2026-01-20T15:07:05Z",
+  "completed": "2026-01-20T15:12:00Z",
+  "implement": false,
+  "experts_used": ["arcgis"],
+  "plans": [
+    {"id": "plan-01", "feature": "ML-001: Migrate createProposedAnchorsLayer to MapLibre", "status": "ready", "path": "project/specs/batch-adw-20260120-150705/plan-01-proposed-anchors-layer.md"},
+    {"id": "plan-02", "feature": "ML-002: Migrate createDroneDeployLayer to MapLibre", "status": "ready", "path": "project/specs/batch-adw-20260120-150705/plan-02-drone-deploy-layer.md"},
+    {"id": "plan-03", "feature": "ML-003: Migrate createGatewayLayer to MapLibre", "status": "ready", "path": "project/specs/batch-adw-20260120-150705/plan-03-gateway-layer.md"},
+    {"id": "plan-04", "feature": "ML-004: Migrate createZonesLayer to MapLibre", "status": "ready", "path": "project/specs/batch-adw-20260120-150705/plan-04-zones-layer.md"},
+    {"id": "plan-05", "feature": "ML-005: Migrate createBeaconLayer to MapLibre", "status": "ready", "path": "project/specs/batch-adw-20260120-150705/plan-05-beacon-layer.md"},
+    {"id": "plan-06", "feature": "ML-006: Evaluate MapLibre native heatmap for RSSI", "status": "ready", "path": "project/specs/batch-adw-20260120-150705/plan-06-rssi-heatmap-evaluation.md"}
+  ]
+}

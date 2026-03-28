@@ -1,0 +1,6 @@
+{
+  "routings": [
+    {"plan_id": "plan-01", "feature": "Latency Formula & Display Improvements", "expert": "frontend-2.0", "reason": "UI components + service layer changes in anchor-planner sub-app within frontend-2.0 monorepo"},
+    {"plan_id": "plan-02", "feature": "Gateway Health & Imbalance Detection", "expert": "frontend-2.0", "reason": "Gateway panel UI improvements + data query changes in anchor-planner sub-app"}
+  ]
+}
