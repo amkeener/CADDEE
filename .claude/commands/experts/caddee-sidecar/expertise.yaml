@@ -68,6 +68,9 @@ architecture:
     Tier 2 (optional): FreeCAD Python modules (detected at runtime).
     All deps managed via uv + pyproject.toml.
 
+coding_standards:
+  - "project/coding-standards/python.md"
+
 guidelines:
   - "Services return dataclass results — never raise exceptions to the caller"
   - "All stdout is reserved for IPC JSON — use stderr for logging"
@@ -81,6 +84,9 @@ guidelines:
   - "New request types need: handler in main.py, message type in shared/messages.py"
   - "Session state is global (_session in main.py) — one session per process lifetime"
   - "Use uv for dependency management: uv add, uv lock, uv run"
+  - "from __future__ import annotations at the top of every file"
+  - "No Pydantic, no TypedDict — dataclasses only"
+  - "Use Literal types for discriminated unions"
 
 validation_commands:
   - "cd sidecar && uv run python -m py_compile caddee/main.py"
@@ -98,3 +104,4 @@ context_files:
   - "sidecar/caddee/services/session_manager.py"
   - "sidecar/pyproject.toml"
   - "shared/messages.py"
+  - "project/coding-standards/python.md"

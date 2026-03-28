@@ -69,6 +69,9 @@ architecture:
     for camera interaction. Mesh material color changes for compile status feedback
     (grey=stable, yellow=compiling). Thumbnail capture via canvas toDataURL.
 
+coding_standards:
+  - "project/coding-standards/typescript.md"
+
 guidelines:
   - "State flows from App.tsx down — components receive data and callbacks via props"
   - "Use inline styles (Record<string, React.CSSProperties>), never CSS files"
@@ -80,6 +83,10 @@ guidelines:
   - "Base64 STL ↔ ArrayBuffer conversion: use atob + Uint8Array pattern from App.tsx"
   - "Components are self-contained — no shared CSS, no external component libraries"
   - "Prefer useCallback for handlers passed to child components"
+  - "Functional components only — no class components"
+  - "No external state libraries (Redux, Zustand, etc.)"
+  - "TypeScript strict mode — no untyped `any` without justification"
+  - "Use type-only imports: import type { Foo } from './types'"
 
 validation_commands:
   - "cd electron && npx tsc --noEmit"
@@ -92,3 +99,4 @@ context_files:
   - "electron/tsconfig.json"
   - "electron/package.json"
   - "shared/messages.ts"
+  - "project/coding-standards/typescript.md"

@@ -122,6 +122,9 @@ verified_experts:
   - security_audit
   - frontend
   - playwright
+  - caddee-electron
+  - caddee-sidecar
+  - caddee-ipc
 
 # Workflow types and their expert requirements
 workflows:

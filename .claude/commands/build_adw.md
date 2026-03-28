@@ -244,7 +244,7 @@ TaskUpdate:
 
 ### 5. Validate Changes (MANDATORY)
 
-> **CRITICAL**: You MUST run ALL validation commands. Do NOT skip this step.
+> **CRITICAL**: You MUST run ALL validation commands AND coding standards checks. Do NOT skip this step.
 > If validation fails, you MUST fix the issues before proceeding.
 
 **Run the expert's `validation_commands` from expertise.yaml**
@@ -254,6 +254,19 @@ TaskUpdate:
 2. If ANY command fails → STOP and fix before continuing
 3. Do NOT mark build as complete until ALL validations pass
 4. Report validation output in the build summary
+
+#### 5.1 Coding Standards Check (MANDATORY)
+
+**If the expert has a `coding_standards` field**, read each referenced coding standards file and verify all changed code complies:
+
+1. Read each file listed in the expert's `coding_standards` array (e.g., `project/coding-standards/python.md`)
+2. Review ALL changed/created files against the standards
+3. Check for violations — common issues:
+   - **Python:** missing `from __future__ import annotations`, using `os.path` instead of `pathlib`, printing to stdout, missing type hints on public functions, using TypedDict/Pydantic instead of dataclasses
+   - **TypeScript:** using `any` without justification, CSS files instead of inline styles, class components, missing `type` keyword on type-only imports, direct IPC calls from renderer
+   - **IPC:** message types not added to both `messages.py` and `messages.ts`, missing union type entries, missing handler in `main.py`
+4. If violations found → fix them before proceeding
+5. Report compliance status in build summary
 
 **Check for TODO comments:**
 - Pattern: `// TODO: <description>` or `# TODO: <description>`

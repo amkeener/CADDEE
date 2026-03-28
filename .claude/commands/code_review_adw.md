@@ -128,6 +128,31 @@ For each affected domain:
 4. **Check patterns** - ensure conventions are followed
 5. **Verify error handling** - follows domain best practices
 
+#### 5.1 Coding Standards Compliance (MANDATORY)
+
+**If the expert has a `coding_standards` field**, read each referenced file and audit all changed code:
+
+1. Read standards files listed in expert's `coding_standards` array (e.g., `project/coding-standards/python.md`)
+2. Check every changed file against applicable standards
+3. Flag violations with severity:
+   - `blocking`: Must fix before approval (e.g., missing type sync between messages.py/messages.ts, printing to stdout in sidecar, `any` without justification)
+   - `warning`: Should fix (e.g., missing `from __future__ import annotations`, inconsistent naming)
+   - `note`: Minor style preference
+
+**Include in report under "Coding Standards" section:**
+```markdown
+## Coding Standards Compliance
+
+| Standard | Files Checked | Violations | Status |
+|----------|--------------|------------|--------|
+| python.md | {count} | {count} | {PASS/FAIL} |
+| typescript.md | {count} | {count} | {PASS/FAIL} |
+| ipc.md | {count} | {count} | {PASS/FAIL} |
+
+### Violations (if any)
+{Numbered list with file, line, violation, severity}
+```
+
 ### 6. Generate Report
 
 Create review at: `project/code_reviews/{YYYY-MM-DD}-adw-{feature}.md`

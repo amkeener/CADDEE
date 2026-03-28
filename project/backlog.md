@@ -84,19 +84,23 @@ Socket connection for live sync uses FreeCAD's built-in Python interpreter.
 ## Phase 4 — Image Input
 > Sketch/photo upload -> Claude vision -> .scad starting point
 
-**Status:** Not Started
+**Status:** Done
 
 ### Features
-- [ ] Image/sketch upload in chat console
-- [ ] Claude vision (multimodal) extracts dimensional intent
-- [ ] Generates initial .scad as conversation starting point
-- [ ] Support for photos of physical objects, hand-drawn sketches, technical drawings
+- [x] Image/sketch upload in chat console (paperclip button, drag-and-drop, clipboard paste)
+- [x] Claude vision (multimodal) extracts dimensional intent
+- [x] Generates initial .scad as conversation starting point
+- [x] Support for photos of physical objects, hand-drawn sketches, technical drawings
+- [x] Image thumbnails shown in chat message bubbles
+- [x] Up to 5 images per message, with preview strip and remove buttons
 
 ---
 
 ## Chores
 
-- [ ] **CADDEE ADW Experts**: Create domain-specific experts for caddee-electron (React/Three.js renderer), caddee-sidecar (Python services, Claude API, OpenSCAD, trimesh/FreeCAD), and caddee-ipc (shared message types, Electron IPC, stdio protocol). Partially started — caddee-electron and caddee-sidecar written, caddee-ipc still needed.
+- [x] **CADDEE ADW Experts**: Created all three domain experts — caddee-electron, caddee-sidecar, caddee-ipc. Each references coding standards and is registered in the orchestrator's verified_experts list.
+- [x] **README.md**: Project README with architecture overview, setup instructions, and dev workflow.
+- [x] **Coding Standards**: Created language-specific standards (TypeScript, Python, IPC) in `project/coding-standards/`. Enforced during `/build_adw` (step 5.1) and `/code_review_adw` (step 5.1) via expert `coding_standards` field.
 
 ---
 

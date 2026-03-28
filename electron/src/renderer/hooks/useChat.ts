@@ -4,7 +4,7 @@ import type { ChatMessage, ChatStatus } from '../types/messages'
 export interface UseChatReturn {
   messages: ChatMessage[]
   status: ChatStatus
-  sendMessage: (text: string) => Promise<void>
+  sendMessage: (text: string, images?: string[]) => Promise<void>
   setMessages: (messages: ChatMessage[]) => void
 }
 
@@ -16,16 +16,17 @@ export function useChat(
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [status, setStatus] = useState<ChatStatus>('idle')
 
-  const sendMessage = useCallback(async (text: string) => {
+  const sendMessage = useCallback(async (text: string, images?: string[]) => {
     const trimmed = text.trim()
     if (!trimmed) return
 
-    // Add user message to history
+    // Add user message to history (with image references for display)
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
       role: 'user',
       content: trimmed,
       timestamp: Date.now(),
+      images: images && images.length > 0 ? images : undefined,
     }
     setMessages(prev => [...prev, userMsg])
 
@@ -39,6 +40,7 @@ export function useChat(
         id: requestId,
         type: 'chat',
         message: trimmed,
+        images: images && images.length > 0 ? images : undefined,
       })
 
       if (response.type === 'chat_response') {

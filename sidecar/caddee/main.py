@@ -88,7 +88,7 @@ def handle_request(request: dict) -> dict:
         return asdict(PongResponse(id=req_id))
 
     if req_type == "chat":
-        return _handle_chat(req_id, request.get("message", ""))
+        return _handle_chat(req_id, request.get("message", ""), request.get("images"))
 
     if req_type == "update_parameters":
         return _handle_update_parameters(req_id, request.get("scadCode", ""))
@@ -125,11 +125,11 @@ def handle_request(request: dict) -> dict:
 # ---------------------------------------------------------------------------
 
 
-def _handle_chat(req_id: str, user_message: str) -> dict:
+def _handle_chat(req_id: str, user_message: str, images: list[str] | None = None) -> dict:
     """Full chat pipeline: Claude -> OpenSCAD compile -> optional retry.
 
     Flow:
-      1. User message -> Claude generates .scad
+      1. User message (+ optional images) -> Claude generates .scad
       2. OpenSCAD compiles .scad -> STL
       3. If compile fails -> feed error back to Claude for ONE retry
       4. If retry fails  -> return ChatErrorResponse
@@ -142,7 +142,7 @@ def _handle_chat(req_id: str, user_message: str) -> dict:
     conversation, current_scad = _session.get_context_for_claude()
 
     try:
-        result = call_claude(conversation, current_scad)
+        result = call_claude(conversation, current_scad, images=images)
     except Exception as exc:
         log.error("Claude API call failed: %s", exc)
         return asdict(ChatErrorResponse(
