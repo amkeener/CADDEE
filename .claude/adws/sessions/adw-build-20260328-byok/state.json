@@ -1,0 +1,8 @@
+{
+  "session_id": "adw-build-20260328-byok",
+  "workflow_type": "build",
+  "status": "completed",
+  "expert_used": "caddee-ipc, caddee-electron, caddee-sidecar",
+  "plan_path": "project/specs/plan/completed/plan-adw-in-app-api-key-setup.md",
+  "atdd_mode": false
+}

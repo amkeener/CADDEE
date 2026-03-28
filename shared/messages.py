@@ -90,6 +90,13 @@ class CapabilitiesRequest:
     type: Literal["get_capabilities"] = "get_capabilities"
 
 
+@dataclass
+class SetApiKeyRequest:
+    id: str
+    api_key: str = ""
+    type: Literal["set_api_key"] = "set_api_key"
+
+
 SidecarRequest = (
     ChatRequest
     | PingRequest
@@ -102,6 +109,7 @@ SidecarRequest = (
     | ImportFileRequest
     | LiveSyncRequest
     | CapabilitiesRequest
+    | SetApiKeyRequest
 )
 
 
@@ -208,6 +216,14 @@ class CapabilitiesResponse:
     type: Literal["capabilities"] = "capabilities"
 
 
+@dataclass
+class SetApiKeyResponse:
+    id: str
+    success: bool = False
+    error: str | None = None
+    type: Literal["api_key_set"] = "api_key_set"
+
+
 SidecarResponse = (
     ChatResponse
     | ChatErrorResponse
@@ -221,6 +237,7 @@ SidecarResponse = (
     | ImportResponse
     | LiveSyncResponse
     | CapabilitiesResponse
+    | SetApiKeyResponse
 )
 
 

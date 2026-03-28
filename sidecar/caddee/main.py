@@ -25,9 +25,10 @@ from shared.messages import (
     LiveSyncResponse,
     ParameterResponse,
     PongResponse,
+    SetApiKeyResponse,
 )
 
-from caddee.services.claude_service import call_claude, call_claude_error_retry
+from caddee.services.claude_service import call_claude, call_claude_error_retry, set_api_key, validate_api_key
 from caddee.services.openscad_service import compile_scad
 from caddee.services.session_manager import Session
 from caddee.services import freecad_service
@@ -116,6 +117,9 @@ def handle_request(request: dict) -> dict:
 
     if req_type == "live_sync":
         return _handle_live_sync(req_id, request.get("stlBase64", ""), request.get("action", "push"))
+
+    if req_type == "set_api_key":
+        return _handle_set_api_key(req_id, request.get("apiKey", ""))
 
     return asdict(ErrorResponse(id=req_id, error=f"Unknown request type: {req_type}"))
 
@@ -340,6 +344,27 @@ def _handle_live_sync(req_id: str, stl_base64: str, action: str) -> dict:
         connected=result.success,
         error=result.error,
     ))
+
+
+# ---------------------------------------------------------------------------
+# API key management
+# ---------------------------------------------------------------------------
+
+
+def _handle_set_api_key(req_id: str, api_key: str) -> dict:
+    """Set and optionally validate the Anthropic API key."""
+    if not api_key:
+        set_api_key("")
+        return asdict(SetApiKeyResponse(id=req_id, success=True))
+
+    error = validate_api_key(api_key)
+    if error:
+        log.error("API key validation failed: %s", error)
+        return asdict(SetApiKeyResponse(id=req_id, success=False, error=error))
+
+    set_api_key(api_key)
+    log.info("API key set successfully")
+    return asdict(SetApiKeyResponse(id=req_id, success=True))
 
 
 # ---------------------------------------------------------------------------

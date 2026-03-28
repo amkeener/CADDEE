@@ -72,6 +72,12 @@ export interface CapabilitiesRequest {
   type: 'get_capabilities'
 }
 
+export interface SetApiKeyRequest {
+  id: string
+  type: 'set_api_key'
+  apiKey: string
+}
+
 export type SidecarRequest =
   | ChatRequest
   | PingRequest
@@ -84,6 +90,7 @@ export type SidecarRequest =
   | ImportFileRequest
   | LiveSyncRequest
   | CapabilitiesRequest
+  | SetApiKeyRequest
 
 // --- Responses (Sidecar -> Electron) ---
 
@@ -189,6 +196,13 @@ export interface CapabilitiesResponse {
   }
 }
 
+export interface SetApiKeyResponse {
+  id: string
+  type: 'api_key_set'
+  success: boolean
+  error?: string
+}
+
 export type SidecarResponse =
   | ChatResponse
   | ChatErrorResponse
@@ -202,6 +216,7 @@ export type SidecarResponse =
   | ImportResultResponse
   | LiveSyncResponse
   | CapabilitiesResponse
+  | SetApiKeyResponse
 
 // --- Shared Types ---
 

@@ -2,6 +2,7 @@ import { app, BrowserWindow, Menu } from 'electron'
 import { join } from 'path'
 import { setupIpcHandlers } from './ipc-handlers'
 import { SidecarManager } from './sidecar'
+import { loadApiKey } from './credentials'
 
 let mainWindow: BrowserWindow | null = null
 let sidecar: SidecarManager | null = null
@@ -100,13 +101,35 @@ function buildMenu(): void {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template))
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   sidecar = new SidecarManager()
   sidecar.start()
 
   setupIpcHandlers(sidecar)
   buildMenu()
   createWindow()
+
+  // Send API key to sidecar at startup
+  const envKey = process.env.ANTHROPIC_API_KEY
+  const storedKey = loadApiKey()
+  const apiKey = envKey || storedKey
+
+  if (apiKey) {
+    try {
+      await sidecar.send({
+        id: crypto.randomUUID(),
+        type: 'set_api_key',
+        apiKey: apiKey,
+      })
+    } catch {
+      console.error('[main] Failed to send API key to sidecar')
+    }
+  } else {
+    // Notify renderer that no API key is configured
+    mainWindow?.webContents.once('did-finish-load', () => {
+      mainWindow?.webContents.send('api-key:missing')
+    })
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

@@ -115,4 +115,4 @@ Socket connection for live sync uses FreeCAD's built-in Python interpreter.
 - [ ] **OpenSCAD MCP server integration**: Connect to existing MCP servers for validation/best-practice checks
 - [ ] **Multi-LLM parallel generation**: Run multiple models and present best outputs (DesignBench pattern)
 - [ ] **RAG for OpenSCAD examples**: Example retrieval to improve generation quality for complex geometries
-- [ ] **OAuth auth mode**: Browser-based OAuth login with Anthropic account instead of requiring API key. Sidecar detects missing `ANTHROPIC_API_KEY`, launches OAuth flow, stores tokens in `~/.caddee/auth.json`, uses them for API calls. Enables users to use their Claude subscription directly.
+- [x] **In-app API key setup (BYOK)**: Settings UI for pasting Anthropic API key, validated against API, stored encrypted via Electron safeStorage at `~/.caddee/credentials`. Gear icon in ToolsPanel. Env var fallback preserved.

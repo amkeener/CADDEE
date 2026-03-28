@@ -1,6 +1,7 @@
 import { ipcMain, dialog, BrowserWindow } from 'electron'
 import { writeFile, readFile } from 'fs/promises'
 import { SidecarManager } from './sidecar'
+import { saveApiKey, loadApiKey, clearApiKey, hasApiKey } from './credentials'
 import type { SidecarRequest } from '../../../shared/messages'
 
 export function setupIpcHandlers(sidecar: SidecarManager): void {
@@ -151,5 +152,43 @@ export function setupIpcHandlers(sidecar: SidecarManager): void {
     if (result.canceled || result.filePaths.length === 0) return { success: false }
 
     return { success: true, filePath: result.filePaths[0] }
+  })
+
+  // --- API Key Handlers ---
+
+  ipcMain.handle('api-key:status', async () => {
+    if (process.env.ANTHROPIC_API_KEY) {
+      return { configured: true, source: 'env' as const }
+    }
+    if (hasApiKey()) {
+      return { configured: true, source: 'stored' as const }
+    }
+    return { configured: false, source: 'none' as const }
+  })
+
+  ipcMain.handle('api-key:save', async (_event, key: string) => {
+    const response = await sidecar.send({
+      id: crypto.randomUUID(),
+      type: 'set_api_key',
+      apiKey: key,
+    })
+
+    if (response.type === 'api_key_set' && response.success) {
+      saveApiKey(key)
+      return { success: true }
+    }
+
+    const error = response.type === 'api_key_set' ? response.error : 'Unexpected response'
+    return { success: false, error }
+  })
+
+  ipcMain.handle('api-key:clear', async () => {
+    clearApiKey()
+    await sidecar.send({
+      id: crypto.randomUUID(),
+      type: 'set_api_key',
+      apiKey: '',
+    })
+    return { success: true }
   })
 }

@@ -1,0 +1,8 @@
+{
+  "session_id": "adw-plan-20260328-byok",
+  "workflow_type": "plan",
+  "status": "completed",
+  "expert_used": "caddee-ipc (primary), caddee-electron, caddee-sidecar",
+  "plan_path": "project/specs/plan/plan-adw-in-app-api-key-setup.md",
+  "tasks_created": ["2", "1", "3", "4", "5", "6"]
+}

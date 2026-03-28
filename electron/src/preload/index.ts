@@ -54,6 +54,22 @@ const api = {
     ipcRenderer.on('menu:open-session', handler)
     return () => ipcRenderer.removeListener('menu:open-session', handler)
   },
+
+  // API Key management
+  getApiKeyStatus: (): Promise<{ configured: boolean; source: 'env' | 'stored' | 'none' }> => {
+    return ipcRenderer.invoke('api-key:status')
+  },
+  saveApiKey: (key: string): Promise<{ success: boolean; error?: string }> => {
+    return ipcRenderer.invoke('api-key:save', key)
+  },
+  clearApiKey: (): Promise<{ success: boolean }> => {
+    return ipcRenderer.invoke('api-key:clear')
+  },
+  onApiKeyMissing: (callback: () => void): (() => void) => {
+    const handler = () => callback()
+    ipcRenderer.on('api-key:missing', handler)
+    return () => ipcRenderer.removeListener('api-key:missing', handler)
+  },
 }
 
 contextBridge.exposeInMainWorld('caddee', api)

@@ -9,6 +9,7 @@ import { ParameterSliders } from './components/ParameterSliders'
 import { CompatibilityPanel } from './components/CompatibilityPanel'
 import { LiveSyncToggle } from './components/LiveSyncToggle'
 import { ImportWizard, type ImportedFile } from './components/ImportWizard'
+import { ApiKeyModal } from './components/ApiKeyModal'
 import type { ScadParam } from './utils/scadParser'
 import type { ChatMessage } from './types/messages'
 
@@ -30,6 +31,8 @@ export function App() {
   const [params, setParams] = useState<ScadParam[]>([])
   const [liveSyncEnabled, setLiveSyncEnabled] = useState(false)
   const [showImportWizard, setShowImportWizard] = useState(false)
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false)
+  const [apiKeyConfigured, setApiKeyConfigured] = useState(true)
   const [capabilities, setCapabilities] = useState<{ stepExport: boolean; fcstdExport: boolean }>({ stepExport: false, fcstdExport: false })
   const captureThumbRef = useRef<(() => string) | null>(null)
   const chatMessagesRef = useRef<ChatMessage[]>([])
@@ -120,6 +123,21 @@ export function App() {
     }).catch(() => {})
   }, [])
 
+  // Check API key status on mount
+  useEffect(() => {
+    window.caddee.getApiKeyStatus().then(result => {
+      setApiKeyConfigured(result.configured)
+      if (!result.configured) {
+        setShowApiKeyModal(true)
+      }
+    })
+    const cleanup = window.caddee.onApiKeyMissing(() => {
+      setApiKeyConfigured(false)
+      setShowApiKeyModal(true)
+    })
+    return cleanup
+  }, [])
+
   // Handle imported file
   const handleImport = useCallback((result: ImportedFile) => {
     if (result.scadCode) {
@@ -178,6 +196,14 @@ export function App() {
     setCurrentStlBase64(iteration.stlBase64)
   }, [])
 
+  const handleOpenSettings = useCallback(() => {
+    setShowApiKeyModal(true)
+  }, [])
+
+  const handleApiKeySaved = useCallback(() => {
+    setApiKeyConfigured(true)
+  }, [])
+
   const handleParameterCompile = useCallback(async (updatedScad: string) => {
     setIsCompiling(true)
     try {
@@ -223,6 +249,7 @@ export function App() {
         }
         right={
           <ToolsPanel
+            onOpenSettings={handleOpenSettings}
             iterationHistory={
               <IterationHistory
                 iterations={iterations}
@@ -263,6 +290,13 @@ export function App() {
         <ImportWizard
           onImport={handleImport}
           onClose={() => setShowImportWizard(false)}
+        />
+      )}
+      {showApiKeyModal && (
+        <ApiKeyModal
+          canClose={apiKeyConfigured}
+          onClose={() => setShowApiKeyModal(false)}
+          onKeySaved={handleApiKeySaved}
         />
       )}
     </div>

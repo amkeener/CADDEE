@@ -31,6 +31,9 @@ _PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "system_prom
 # Supported image MIME types (matches Anthropic API)
 _SUPPORTED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 
+# Runtime API key — set via IPC, takes precedence over env var when not None.
+_api_key: str | None = None
+
 
 # ---------------------------------------------------------------------------
 # Response container
@@ -48,6 +51,28 @@ class ClaudeResult:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
+
+def set_api_key(key: str) -> None:
+    """Set the API key at runtime (called via IPC from Electron)."""
+    global _api_key
+    _api_key = key if key else None
+
+
+def validate_api_key(key: str) -> str | None:
+    """Validate an API key with a lightweight API call. Returns error string or None."""
+    try:
+        client = anthropic.Anthropic(api_key=key)
+        client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=1,
+            messages=[{"role": "user", "content": "hi"}],
+        )
+        return None
+    except anthropic.AuthenticationError:
+        return "Invalid API key"
+    except Exception as exc:
+        return str(exc)
 
 
 def load_system_prompt() -> str:
@@ -77,7 +102,7 @@ def call_claude(
     -------
     ClaudeResult with the assistant text and extracted .scad code (if any).
     """
-    client = anthropic.Anthropic()  # picks up ANTHROPIC_API_KEY from env
+    client = anthropic.Anthropic(api_key=_api_key)  # uses env var when _api_key is None
 
     system_prompt = load_system_prompt()
     if current_scad:
