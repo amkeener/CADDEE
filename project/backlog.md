@@ -94,6 +94,12 @@ Socket connection for live sync uses FreeCAD's built-in Python interpreter.
 
 ---
 
+## Chores
+
+- [ ] **CADDEE ADW Experts**: Create domain-specific experts for caddee-electron (React/Three.js renderer), caddee-sidecar (Python services, Claude API, OpenSCAD, trimesh/FreeCAD), and caddee-ipc (shared message types, Electron IPC, stdio protocol). Partially started — caddee-electron and caddee-sidecar written, caddee-ipc still needed.
+
+---
+
 ## Future Work / Backlog
 > Items identified during planning for future consideration
 
