@@ -1,0 +1,10 @@
+{
+  "session_id": "adw-build-20260328-phase1",
+  "workflow_type": "build",
+  "status": "completed",
+  "expert_used": "none (CADDEE experts not yet created)",
+  "plan_path": "project/specs/plan/completed/plan-adw-phase1-core-loop-mvp.md",
+  "atdd_mode": false,
+  "tasks_completed": 6,
+  "tasks_pending": 0
+}

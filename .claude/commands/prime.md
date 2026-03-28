@@ -1,19 +1,6 @@
 # Prime
 > Execute the following sections to understand the codebase then summarize your understanding.
 
-## Start Agent Messenger (Background)
-Start the inter-agent communication listener so other Claude instances on the network can reach us.
-
-```bash
-# Start agent-messenger in background with project-specific UUID
-PROJECT_NAME="${PROJECT_NAME:-$(basename $(pwd))}"
-agent-messenger --uuid "${PROJECT_NAME}-$(hostname | tr '[:upper:]' '[:lower:]' | cut -d. -f1)" listen > /tmp/agent-messenger-${PROJECT_NAME}.log 2>&1 &
-echo "Agent messenger started (PID: $!, UUID: ${PROJECT_NAME}-$(hostname | tr '[:upper:]' '[:lower:]' | cut -d. -f1))"
-```
-
-To send a message to other agents: `agent-messenger send "Hello from ${PROJECT_NAME}!"`
-To see active peers: `agent-messenger peers`
-
 ## Read & Cleanup (if exists)
 wip_summary.md - Resume context from previous session.
 
