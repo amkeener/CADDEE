@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+.parcel-cache/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets / credentials
+.env
+.env.local
+credentials.json
+
+# Session artifacts
+.session_branches.json
+
+# Claude command logs (may contain secrets)
+.claude/commands/logs/
+
+# Build outputs
+out/
+build/
+*.stl
+*.step
