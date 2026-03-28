@@ -25,19 +25,19 @@ Socket connection for live sync uses FreeCAD's built-in Python interpreter.
 ## Phase 1 — Core Loop (MVP)
 > Text -> Claude -> .scad -> OpenSCAD CLI -> STL -> Three.js viewer
 
-**Status:** Not Started
+**Status:** Done
 
 ### Features
-- [ ] Python sidecar with Claude API integration (Anthropic SDK)
-- [ ] OpenSCAD code generation via system prompt + conversation context
-- [ ] OpenSCAD CLI compilation (.scad -> STL)
-- [ ] Error recovery: feed compile errors back to Claude (1 retry)
-- [ ] Electron shell with single-window layout
-- [ ] Three.js viewport rendering STL output (OrbitControls)
-- [ ] Hot-swap STL on each iteration
-- [ ] Basic chat console (text input, conversation display)
-- [ ] IPC bridge: Electron <-> Python sidecar via stdio (JSON)
-- [ ] Color-coded render feedback (grey = stable, yellow = in-progress)
+- [x] Python sidecar with Claude API integration (Anthropic SDK)
+- [x] OpenSCAD code generation via system prompt + conversation context
+- [x] OpenSCAD CLI compilation (.scad -> STL)
+- [x] Error recovery: feed compile errors back to Claude (1 retry)
+- [x] Electron shell with single-window layout
+- [x] Three.js viewport rendering STL output (OrbitControls)
+- [x] Hot-swap STL on each iteration
+- [x] Basic chat console (text input, conversation display)
+- [x] IPC bridge: Electron <-> Python sidecar via stdio (JSON)
+- [x] Color-coded render feedback (grey = stable, yellow = in-progress)
 
 ### Out of Scope for Phase 1
 - Tools panel
@@ -105,3 +105,4 @@ Socket connection for live sync uses FreeCAD's built-in Python interpreter.
 - [ ] **OpenSCAD MCP server integration**: Connect to existing MCP servers for validation/best-practice checks
 - [ ] **Multi-LLM parallel generation**: Run multiple models and present best outputs (DesignBench pattern)
 - [ ] **RAG for OpenSCAD examples**: Example retrieval to improve generation quality for complex geometries
+- [ ] **OAuth auth mode**: Browser-based OAuth login with Anthropic account instead of requiring API key. Sidecar detects missing `ANTHROPIC_API_KEY`, launches OAuth flow, stores tokens in `~/.caddee/auth.json`, uses them for API calls. Enables users to use their Claude subscription directly.
