@@ -18,6 +18,7 @@ from shared.messages import (
     ChatErrorResponse,
     ChatResponse,
     ErrorResponse,
+    ParameterResponse,
     PongResponse,
 )
 
@@ -82,6 +83,15 @@ def handle_request(request: dict) -> dict:
 
     if req_type == "chat":
         return _handle_chat(req_id, request.get("message", ""))
+
+    if req_type == "update_parameters":
+        return _handle_update_parameters(req_id, request.get("scadCode", ""))
+
+    if req_type == "save_session":
+        return _handle_save_session(req_id)
+
+    if req_type == "load_session":
+        return _handle_load_session(req_id, request.get("sessionData", {}))
 
     return asdict(ErrorResponse(id=req_id, error=f"Unknown request type: {req_type}"))
 
@@ -186,6 +196,43 @@ def _handle_chat(req_id: str, user_message: str) -> dict:
         error="OpenSCAD compilation failed after retry.",
         compile_error=retry_compile.error,
     ))
+
+
+# ---------------------------------------------------------------------------
+# Parameter update (recompile without Claude)
+# ---------------------------------------------------------------------------
+
+
+def _handle_update_parameters(req_id: str, scad_code: str) -> dict:
+    """Compile updated .scad code directly (no Claude call)."""
+    if not scad_code:
+        return asdict(ErrorResponse(id=req_id, error="No scad code provided"))
+
+    compile_result = compile_scad(scad_code)
+    if not compile_result.success:
+        return asdict(ErrorResponse(id=req_id, error=compile_result.error or "Compile failed"))
+
+    stl_b64 = _read_stl_base64(compile_result.stl_path)
+    _session.current_scad = scad_code
+    return asdict(ParameterResponse(id=req_id, stl_base64=stl_b64, scad_code=scad_code))
+
+
+# ---------------------------------------------------------------------------
+# Session save/load
+# ---------------------------------------------------------------------------
+
+
+def _handle_save_session(req_id: str) -> dict:
+    """Serialize current session state."""
+    data = _session.to_dict()
+    return {"id": req_id, "type": "session_data", "sessionData": data}
+
+
+def _handle_load_session(req_id: str, session_data: dict) -> dict:
+    """Restore session from serialized data."""
+    global _session
+    _session = Session.from_dict(session_data)
+    return {"id": req_id, "type": "session_loaded", "message": "Session restored"}
 
 
 # ---------------------------------------------------------------------------

@@ -3,16 +3,19 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { STLLoader } from 'three/addons/loaders/STLLoader.js'
 
+import type { MutableRefObject } from 'react'
+
 interface ViewportProps {
   stlData: ArrayBuffer | null
   isCompiling: boolean
+  captureThumbRef?: MutableRefObject<(() => string) | null>
 }
 
 const BACKGROUND_COLOR = 0x1a1a2e
 const COLOR_STABLE = 0x888888
 const COLOR_COMPILING = 0xffcc00
 
-export function Viewport({ stlData, isCompiling }: ViewportProps) {
+export function Viewport({ stlData, isCompiling, captureThumbRef }: ViewportProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<THREE.Scene | null>(null)
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
@@ -89,6 +92,24 @@ export function Viewport({ stlData, isCompiling }: ViewportProps) {
       renderer.setSize(width, height)
     })
     resizeObserver.observe(container)
+
+    // Expose thumbnail capture function
+    if (captureThumbRef) {
+      captureThumbRef.current = () => {
+        renderer.render(scene, camera)
+        const canvas = renderer.domElement
+        // Create a small thumbnail
+        const thumbCanvas = document.createElement('canvas')
+        thumbCanvas.width = 96
+        thumbCanvas.height = 96
+        const ctx = thumbCanvas.getContext('2d')
+        if (ctx) {
+          ctx.drawImage(canvas, 0, 0, 96, 96)
+          return thumbCanvas.toDataURL('image/png')
+        }
+        return ''
+      }
+    }
 
     // Cleanup on unmount
     return () => {

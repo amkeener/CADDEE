@@ -17,7 +17,24 @@ export interface PingRequest {
   type: 'ping'
 }
 
-export type SidecarRequest = ChatRequest | PingRequest
+export interface UpdateParametersRequest {
+  id: string
+  type: 'update_parameters'
+  scadCode: string
+}
+
+export interface SaveSessionRequest {
+  id: string
+  type: 'save_session'
+}
+
+export interface LoadSessionRequest {
+  id: string
+  type: 'load_session'
+  sessionData: Record<string, unknown>
+}
+
+export type SidecarRequest = ChatRequest | PingRequest | UpdateParametersRequest | SaveSessionRequest | LoadSessionRequest
 
 // --- Responses (Sidecar -> Electron) ---
 
@@ -49,7 +66,26 @@ export interface ErrorResponse {
   error: string
 }
 
-export type SidecarResponse = ChatResponse | ChatErrorResponse | PongResponse | ErrorResponse
+export interface ParameterResponse {
+  id: string
+  type: 'parameter_response'
+  stlBase64: string
+  scadCode: string
+}
+
+export interface SessionDataResponse {
+  id: string
+  type: 'session_data'
+  sessionData: Record<string, unknown>
+}
+
+export interface SessionLoadedResponse {
+  id: string
+  type: 'session_loaded'
+  message: string
+}
+
+export type SidecarResponse = ChatResponse | ChatErrorResponse | PongResponse | ErrorResponse | ParameterResponse | SessionDataResponse | SessionLoadedResponse
 
 // --- Shared Types ---
 

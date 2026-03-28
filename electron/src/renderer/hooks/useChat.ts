@@ -5,11 +5,13 @@ export interface UseChatReturn {
   messages: ChatMessage[]
   status: ChatStatus
   sendMessage: (text: string) => Promise<void>
+  setMessages: (messages: ChatMessage[]) => void
 }
 
 export function useChat(
-  onStlUpdate: (data: ArrayBuffer | null) => void,
+  onStlUpdate: (data: ArrayBuffer | null, scadCode?: string, stlBase64?: string) => void,
   onCompileStateChange: (compiling: boolean) => void,
+  onIteration?: (prompt: string, scadCode: string, stlBase64: string) => void,
 ): UseChatReturn {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [status, setStatus] = useState<ChatStatus>('idle')
@@ -56,7 +58,11 @@ export function useChat(
           for (let i = 0; i < binary.length; i++) {
             bytes[i] = binary.charCodeAt(i)
           }
-          onStlUpdate(bytes.buffer)
+          onStlUpdate(bytes.buffer, response.scadCode, response.stlBase64)
+          // Notify parent of new iteration (short delay so viewport renders for thumbnail)
+          if (onIteration && response.scadCode) {
+            setTimeout(() => onIteration(trimmed, response.scadCode, response.stlBase64), 100)
+          }
         }
 
         setStatus('idle')
@@ -95,7 +101,7 @@ export function useChat(
     } finally {
       onCompileStateChange(false)
     }
-  }, [onStlUpdate, onCompileStateChange])
+  }, [onStlUpdate, onCompileStateChange, onIteration])
 
-  return { messages, status, sendMessage }
+  return { messages, status, sendMessage, setMessages }
 }

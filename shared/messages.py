@@ -26,7 +26,14 @@ class PingRequest:
     type: Literal["ping"] = "ping"
 
 
-SidecarRequest = ChatRequest | PingRequest
+@dataclass
+class UpdateParametersRequest:
+    id: str
+    scad_code: str
+    type: Literal["update_parameters"] = "update_parameters"
+
+
+SidecarRequest = ChatRequest | PingRequest | UpdateParametersRequest
 
 
 # --- Responses (Sidecar -> Electron) ---
@@ -64,7 +71,15 @@ class ErrorResponse:
     type: Literal["error"] = "error"
 
 
-SidecarResponse = ChatResponse | ChatErrorResponse | PongResponse | ErrorResponse
+@dataclass
+class ParameterResponse:
+    id: str
+    stl_base64: str
+    scad_code: str
+    type: Literal["parameter_response"] = "parameter_response"
+
+
+SidecarResponse = ChatResponse | ChatErrorResponse | PongResponse | ErrorResponse | ParameterResponse
 
 
 # --- Shared Types ---

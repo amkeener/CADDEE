@@ -51,16 +51,16 @@ Socket connection for live sync uses FreeCAD's built-in Python interpreter.
 ## Phase 2 — Full UI
 > Three-pane Electron shell with full feature set
 
-**Status:** Not Started
+**Status:** Done
 
 ### Features
-- [ ] Three-pane layout (viewport, chat, tools panel)
-- [ ] Chat history with conversation threading
-- [ ] Parameter sliders auto-generated from OpenSCAD `/* [Section] */` customizer syntax
-- [ ] Iteration history with thumbnails (click to restore)
-- [ ] Session save/restore (.cad-session files)
-- [ ] Export: STL, .scad download
-- [ ] Resizable panes
+- [x] Three-pane layout (viewport, chat, tools panel)
+- [x] Chat history with conversation threading
+- [x] Parameter sliders auto-generated from OpenSCAD `/* [Section] */` customizer syntax
+- [x] Iteration history with thumbnails (click to restore)
+- [x] Session save/restore (.cad-session files)
+- [x] Export: STL, .scad download
+- [x] Resizable panes
 
 ---
 

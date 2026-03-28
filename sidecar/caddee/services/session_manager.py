@@ -87,6 +87,49 @@ class Session:
     # Internal helpers
     # ------------------------------------------------------------------
 
+    def to_dict(self) -> dict:
+        """Serialize session state for save/restore."""
+        return {
+            "version": 1,
+            "conversation": [
+                {"role": m.role, "content": m.content} for m in self.conversation
+            ],
+            "current_scad": self.current_scad,
+            "iterations": [
+                {
+                    "prompt": it.prompt,
+                    "scad_code": it.scad_code,
+                    "stl_base64": it.stl_base64,
+                    "timestamp": it.timestamp,
+                }
+                for it in self.iterations
+            ],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Session":
+        """Restore session from serialized data."""
+        session = cls()
+        for msg in data.get("conversation", []):
+            session.conversation.append(
+                ConversationMessage(role=msg["role"], content=msg["content"])
+            )
+        session.current_scad = data.get("current_scad")
+        for it in data.get("iterations", []):
+            session.iterations.append(
+                DesignIteration(
+                    prompt=it["prompt"],
+                    scad_code=it["scad_code"],
+                    stl_base64=it.get("stl_base64", ""),
+                    timestamp=it.get("timestamp", 0.0),
+                )
+            )
+        return session
+
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
     def _last_user_message(self) -> str:
         """Return the most recent user message, or empty string."""
         for msg in reversed(self.conversation):

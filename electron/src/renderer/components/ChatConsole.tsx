@@ -1,10 +1,14 @@
-import { useRef, useEffect, useState, type KeyboardEvent } from 'react'
+import { useRef, useEffect, useState, type KeyboardEvent, type MutableRefObject } from 'react'
 import { useChat } from '../hooks/useChat'
 import type { ChatMessage, ChatStatus } from '../types/messages'
 
 interface ChatConsoleProps {
-  onStlUpdate: (data: ArrayBuffer | null) => void
+  onStlUpdate: (data: ArrayBuffer | null, scadCode?: string, stlBase64?: string) => void
   onCompileStateChange: (compiling: boolean) => void
+  onIteration?: (prompt: string, scadCode: string, stlBase64: string) => void
+  iterationCount?: number
+  messagesRef?: MutableRefObject<ChatMessage[]>
+  setMessagesRef?: MutableRefObject<((msgs: ChatMessage[]) => void) | null>
 }
 
 const STATUS_LABELS: Record<ChatStatus, string | null> = {
@@ -15,11 +19,19 @@ const STATUS_LABELS: Record<ChatStatus, string | null> = {
   error: null,
 }
 
-export function ChatConsole({ onStlUpdate, onCompileStateChange }: ChatConsoleProps) {
-  const { messages, status, sendMessage } = useChat(onStlUpdate, onCompileStateChange)
+export function ChatConsole({ onStlUpdate, onCompileStateChange, onIteration, iterationCount = 0, messagesRef, setMessagesRef }: ChatConsoleProps) {
+  const { messages, status, sendMessage, setMessages } = useChat(onStlUpdate, onCompileStateChange, onIteration)
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Sync refs for session restore
+  useEffect(() => {
+    if (messagesRef) messagesRef.current = messages
+  }, [messages, messagesRef])
+  useEffect(() => {
+    if (setMessagesRef) setMessagesRef.current = setMessages
+  }, [setMessages, setMessagesRef])
 
   const isBusy = status === 'thinking' || status === 'compiling' || status === 'retrying'
 
@@ -67,9 +79,21 @@ export function ChatConsole({ onStlUpdate, onCompileStateChange }: ChatConsolePr
             Describe what you want to build and CADDEE will generate a 3D model.
           </div>
         )}
-        {messages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} />
-        ))}
+        {messages.map((msg, idx) => {
+          // Show iteration divider before each user message (except the first)
+          const showDivider = msg.role === 'user' && idx > 0
+          const iterNum = messages.slice(0, idx + 1).filter(m => m.role === 'user').length
+          return (
+            <div key={msg.id}>
+              {showDivider && (
+                <div style={styles.iterationDivider}>
+                  <span style={styles.iterationBadge}>Iteration {iterNum}</span>
+                </div>
+              )}
+              <MessageBubble message={msg} />
+            </div>
+          )
+        })}
         {isBusy && (
           <div style={styles.thinkingBubble}>
             <ThinkingDots />
@@ -244,6 +268,25 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     justifyContent: 'flex-start',
     marginBottom: 10,
+  },
+
+  // Iteration grouping
+  iterationDivider: {
+    display: 'flex',
+    alignItems: 'center',
+    margin: '16px 0 10px',
+    gap: 10,
+  },
+  iterationBadge: {
+    fontSize: 10,
+    fontWeight: 600,
+    color: '#5588ff',
+    textTransform: 'uppercase' as const,
+    letterSpacing: 1,
+    whiteSpace: 'nowrap' as const,
+    padding: '2px 8px',
+    background: '#1a2a4a',
+    borderRadius: 10,
   },
 
   // Status bar
