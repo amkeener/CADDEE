@@ -1,7 +1,7 @@
 import { ipcMain, dialog, BrowserWindow } from 'electron'
 import { writeFile, readFile } from 'fs/promises'
 import { SidecarManager } from './sidecar'
-import { saveApiKey, loadApiKey, clearApiKey, hasApiKey } from './credentials'
+import { saveApiKey, clearApiKey, hasApiKey } from './credentials'
 import type { SidecarRequest } from '../../../shared/messages'
 
 export function setupIpcHandlers(sidecar: SidecarManager): void {

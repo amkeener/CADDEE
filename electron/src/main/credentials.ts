@@ -15,7 +15,7 @@ function ensureDir(): void {
 export function saveApiKey(key: string): void {
   ensureDir()
   const encrypted = safeStorage.encryptString(key)
-  writeFileSync(CREDENTIALS_PATH, encrypted)
+  writeFileSync(CREDENTIALS_PATH, encrypted, { mode: 0o600 })
 }
 
 export function loadApiKey(): string | null {
