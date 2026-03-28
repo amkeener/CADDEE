@@ -116,3 +116,5 @@ Socket connection for live sync uses FreeCAD's built-in Python interpreter.
 - [ ] **Multi-LLM parallel generation**: Run multiple models and present best outputs (DesignBench pattern)
 - [ ] **RAG for OpenSCAD examples**: Example retrieval to improve generation quality for complex geometries
 - [x] **In-app API key setup (BYOK)**: Settings UI for pasting Anthropic API key, validated against API, stored encrypted via Electron safeStorage at `~/.caddee/credentials`. Gear icon in ToolsPanel. Env var fallback preserved.
+- [ ] **safeStorage availability guard**: Handle `safeStorage.isEncryptionAvailable() === false` (headless Linux without keyring) — fallback to plaintext with warning or prompt user to install a keyring
+- [ ] **Narrow validation error messages**: `validate_api_key` broad `except Exception` could expose internal details — sanitize error strings before returning to UI
