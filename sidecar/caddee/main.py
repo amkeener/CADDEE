@@ -17,7 +17,12 @@ if _PROJECT_ROOT not in sys.path:
 from shared.messages import (
     ChatErrorResponse,
     ChatResponse,
+    CompatibilityResponse,
+    CapabilitiesResponse,
     ErrorResponse,
+    ExportResponse,
+    ImportResponse,
+    LiveSyncResponse,
     ParameterResponse,
     PongResponse,
 )
@@ -25,6 +30,7 @@ from shared.messages import (
 from caddee.services.claude_service import call_claude, call_claude_error_retry
 from caddee.services.openscad_service import compile_scad
 from caddee.services.session_manager import Session
+from caddee.services import freecad_service
 
 # ---------------------------------------------------------------------------
 # Logging — write to stderr so stdout stays clean for IPC
@@ -92,6 +98,24 @@ def handle_request(request: dict) -> dict:
 
     if req_type == "load_session":
         return _handle_load_session(req_id, request.get("sessionData", {}))
+
+    if req_type == "check_compatibility":
+        return _handle_check_compatibility(req_id, request.get("stlBase64", ""))
+
+    if req_type == "get_capabilities":
+        return _handle_get_capabilities(req_id)
+
+    if req_type == "export_step":
+        return _handle_export_step(req_id, request.get("stlBase64", ""), request.get("outputPath", ""))
+
+    if req_type == "export_fcstd":
+        return _handle_export_fcstd(req_id, request.get("stlBase64", ""), request.get("outputPath", ""))
+
+    if req_type == "import_file":
+        return _handle_import_file(req_id, request.get("filePath", ""))
+
+    if req_type == "live_sync":
+        return _handle_live_sync(req_id, request.get("stlBase64", ""), request.get("action", "push"))
 
     return asdict(ErrorResponse(id=req_id, error=f"Unknown request type: {req_type}"))
 
@@ -233,6 +257,89 @@ def _handle_load_session(req_id: str, session_data: dict) -> dict:
     global _session
     _session = Session.from_dict(session_data)
     return {"id": req_id, "type": "session_loaded", "message": "Session restored"}
+
+
+# ---------------------------------------------------------------------------
+# FreeCAD integration handlers (Phase 3)
+# ---------------------------------------------------------------------------
+
+
+def _handle_check_compatibility(req_id: str, stl_base64: str) -> dict:
+    """Run mesh compatibility checks via trimesh."""
+    if not stl_base64:
+        return asdict(ErrorResponse(id=req_id, error="No STL data provided"))
+    result = freecad_service.analyze_mesh(stl_base64)
+    return asdict(CompatibilityResponse(
+        id=req_id,
+        checks=result.to_dict()["checks"],
+        stats=result.to_dict()["stats"],
+        overall=result.overall,
+    ))
+
+
+def _handle_get_capabilities(req_id: str) -> dict:
+    """Report available capabilities."""
+    caps = freecad_service.get_capabilities()
+    return asdict(CapabilitiesResponse(id=req_id, capabilities=caps.to_dict()))
+
+
+def _handle_export_step(req_id: str, stl_base64: str, output_path: str) -> dict:
+    """Export current model as STEP file."""
+    if not stl_base64:
+        return asdict(ErrorResponse(id=req_id, error="No STL data provided"))
+    result = freecad_service.export_step(stl_base64, output_path)
+    return asdict(ExportResponse(
+        id=req_id,
+        success=result.success,
+        output_path=result.output_path,
+        error=result.error,
+    ))
+
+
+def _handle_export_fcstd(req_id: str, stl_base64: str, output_path: str) -> dict:
+    """Export current model as FreeCAD document."""
+    if not stl_base64:
+        return asdict(ErrorResponse(id=req_id, error="No STL data provided"))
+    result = freecad_service.export_fcstd(stl_base64, output_path)
+    return asdict(ExportResponse(
+        id=req_id,
+        success=result.success,
+        output_path=result.output_path,
+        error=result.error,
+    ))
+
+
+def _handle_import_file(req_id: str, file_path: str) -> dict:
+    """Import a CAD file."""
+    if not file_path:
+        return asdict(ErrorResponse(id=req_id, error="No file path provided"))
+    result = freecad_service.import_file(file_path)
+    d = result.to_dict()
+    return asdict(ImportResponse(
+        id=req_id,
+        success=d["success"],
+        file_type=d["fileType"],
+        scad_code=d.get("scadCode"),
+        stl_base64=d.get("stlBase64"),
+        metadata=d.get("metadata", {}),
+        error=d.get("error"),
+    ))
+
+
+def _handle_live_sync(req_id: str, stl_base64: str, action: str) -> dict:
+    """Push model to running FreeCAD instance or check connection."""
+    if action == "check":
+        connected = freecad_service.check_freecad_running()
+        return asdict(LiveSyncResponse(id=req_id, success=True, connected=connected))
+    if not stl_base64:
+        return asdict(ErrorResponse(id=req_id, error="No STL data provided"))
+    result = freecad_service.live_sync_push(stl_base64)
+    return asdict(LiveSyncResponse(
+        id=req_id,
+        success=result.success,
+        connected=result.success,
+        error=result.error,
+    ))
 
 
 # ---------------------------------------------------------------------------

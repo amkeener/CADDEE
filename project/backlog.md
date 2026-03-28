@@ -67,17 +67,17 @@ Socket connection for live sync uses FreeCAD's built-in Python interpreter.
 ## Phase 3 — FreeCAD Integration
 > Headless checks, STEP export, live sync, import wizard
 
-**Status:** Not Started
+**Status:** Done
 
 **Requires:** FreeCAD 1.0+ installed separately
 
 ### Features
-- [ ] Headless compatibility checks (non-manifold, self-intersecting, open shells, thin walls)
-- [ ] STEP export via FreeCAD/CadQuery conversion pipeline
-- [ ] Live sync: push .step to open FreeCAD instance via socket
-- [ ] Import wizard: load .FCStd, .step, .stl, .scad files as starting points
-- [ ] Compatibility results surfaced in Tools panel with plain-English explanations
-- [ ] Export to .FCStd format
+- [x] Headless compatibility checks (non-manifold, self-intersecting, open shells, thin walls)
+- [x] STEP export via FreeCAD/CadQuery conversion pipeline
+- [x] Live sync: push .step to open FreeCAD instance via socket
+- [x] Import wizard: load .FCStd, .step, .stl, .scad files as starting points
+- [x] Compatibility results surfaced in Tools panel with plain-English explanations
+- [x] Export to .FCStd format
 
 ---
 

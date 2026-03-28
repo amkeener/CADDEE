@@ -6,6 +6,9 @@ import { ToolsPanel } from './components/ToolsPanel'
 import { ExportButtons } from './components/ExportButtons'
 import { IterationHistory } from './components/IterationHistory'
 import { ParameterSliders } from './components/ParameterSliders'
+import { CompatibilityPanel } from './components/CompatibilityPanel'
+import { LiveSyncToggle } from './components/LiveSyncToggle'
+import { ImportWizard, type ImportedFile } from './components/ImportWizard'
 import type { ScadParam } from './utils/scadParser'
 import type { ChatMessage } from './types/messages'
 
@@ -25,6 +28,9 @@ export function App() {
   const [currentStlBase64, setCurrentStlBase64] = useState<string>('')
   const [iterations, setIterations] = useState<Iteration[]>([])
   const [params, setParams] = useState<ScadParam[]>([])
+  const [liveSyncEnabled, setLiveSyncEnabled] = useState(false)
+  const [showImportWizard, setShowImportWizard] = useState(false)
+  const [capabilities, setCapabilities] = useState<{ stepExport: boolean; fcstdExport: boolean }>({ stepExport: false, fcstdExport: false })
   const captureThumbRef = useRef<(() => string) | null>(null)
   const chatMessagesRef = useRef<ChatMessage[]>([])
   const setChatMessagesRef = useRef<((msgs: ChatMessage[]) => void) | null>(null)
@@ -99,13 +105,46 @@ export function App() {
     setIterations(restoredIterations)
   }, [])
 
+  // Fetch capabilities on mount
+  useEffect(() => {
+    window.caddee.sendToSidecar({
+      id: crypto.randomUUID(),
+      type: 'get_capabilities',
+    }).then(response => {
+      if (response.type === 'capabilities') {
+        setCapabilities({
+          stepExport: response.capabilities.stepExport,
+          fcstdExport: response.capabilities.fcstdExport,
+        })
+      }
+    }).catch(() => {})
+  }, [])
+
+  // Handle imported file
+  const handleImport = useCallback((result: ImportedFile) => {
+    if (result.scadCode) {
+      setCurrentScad(result.scadCode)
+    }
+    if (result.stlBase64) {
+      const binary = atob(result.stlBase64)
+      const bytes = new Uint8Array(binary.length)
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i)
+      }
+      setStlData(bytes.buffer)
+      setCurrentStlBase64(result.stlBase64)
+    }
+  }, [])
+
   // Listen for menu events
   useEffect(() => {
     const cleanupSave = window.caddee.onMenuSaveSession(handleSaveSession)
     const cleanupOpen = window.caddee.onMenuOpenSession(handleOpenSession)
+    const cleanupImport = window.caddee.onMenuImportFile(() => setShowImportWizard(true))
     return () => {
       cleanupSave()
       cleanupOpen()
+      cleanupImport()
     }
   }, [handleSaveSession, handleOpenSession])
 
@@ -198,15 +237,34 @@ export function App() {
                 onCompile={handleParameterCompile}
               />
             }
+            compatibilityPanel={
+              <CompatibilityPanel
+                currentStlBase64={currentStlBase64}
+              />
+            }
             exportButtons={
               <ExportButtons
                 currentScad={currentScad}
                 currentStlBase64={currentStlBase64}
+                capabilities={capabilities}
+              />
+            }
+            liveSyncToggle={
+              <LiveSyncToggle
+                currentStlBase64={currentStlBase64}
+                enabled={liveSyncEnabled}
+                onToggle={setLiveSyncEnabled}
               />
             }
           />
         }
       />
+      {showImportWizard && (
+        <ImportWizard
+          onImport={handleImport}
+          onClose={() => setShowImportWizard(false)}
+        />
+      )}
     </div>
   )
 }

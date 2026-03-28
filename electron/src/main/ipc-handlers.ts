@@ -80,4 +80,76 @@ export function setupIpcHandlers(sidecar: SidecarManager): void {
     const data = await readFile(result.filePaths[0], 'utf-8')
     return { success: true, data }
   })
+
+  // --- STEP / FCStd Export Handlers (Phase 3) ---
+
+  ipcMain.handle('export:step', async (_event, stlBase64: string) => {
+    const win = BrowserWindow.getFocusedWindow()
+    if (!win) return { success: false }
+
+    const result = await dialog.showSaveDialog(win, {
+      title: 'Export STEP',
+      defaultPath: 'model.step',
+      filters: [{ name: 'STEP Files', extensions: ['step', 'stp'] }],
+    })
+
+    if (result.canceled || !result.filePath) return { success: false }
+
+    const response = await sidecar.send({
+      id: crypto.randomUUID(),
+      type: 'export_step',
+      stlBase64,
+      outputPath: result.filePath,
+    })
+
+    if (response.type === 'export_result') {
+      return { success: response.success, path: result.filePath, error: response.error }
+    }
+    return { success: false, error: 'Unexpected response' }
+  })
+
+  ipcMain.handle('export:fcstd', async (_event, stlBase64: string) => {
+    const win = BrowserWindow.getFocusedWindow()
+    if (!win) return { success: false }
+
+    const result = await dialog.showSaveDialog(win, {
+      title: 'Export FreeCAD Document',
+      defaultPath: 'model.FCStd',
+      filters: [{ name: 'FreeCAD Documents', extensions: ['FCStd'] }],
+    })
+
+    if (result.canceled || !result.filePath) return { success: false }
+
+    const response = await sidecar.send({
+      id: crypto.randomUUID(),
+      type: 'export_fcstd',
+      stlBase64,
+      outputPath: result.filePath,
+    })
+
+    if (response.type === 'export_result') {
+      return { success: response.success, path: result.filePath, error: response.error }
+    }
+    return { success: false, error: 'Unexpected response' }
+  })
+
+  // --- Import Handler (Phase 3) ---
+
+  ipcMain.handle('import:file', async () => {
+    const win = BrowserWindow.getFocusedWindow()
+    if (!win) return { success: false }
+
+    const result = await dialog.showOpenDialog(win, {
+      title: 'Import CAD File',
+      filters: [
+        { name: 'CAD Files', extensions: ['stl', 'scad', 'step', 'stp', 'FCStd'] },
+        { name: 'All Files', extensions: ['*'] },
+      ],
+      properties: ['openFile'],
+    })
+
+    if (result.canceled || result.filePaths.length === 0) return { success: false }
+
+    return { success: true, filePath: result.filePaths[0] }
+  })
 }

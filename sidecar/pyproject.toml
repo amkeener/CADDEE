@@ -5,6 +5,8 @@ description = "CADDEE Python sidecar — Claude API, OpenSCAD CLI, session manag
 requires-python = ">=3.11"
 dependencies = [
     "anthropic>=0.42.0",
+    "trimesh>=4.0",
+    "numpy>=1.24",
 ]
 
 [project.optional-dependencies]

@@ -44,6 +44,12 @@ function buildMenu(): void {
           click: () => mainWindow?.webContents.send('menu:open-session'),
         },
         { type: 'separator' },
+        {
+          label: 'Import CAD File...',
+          accelerator: 'CmdOrCtrl+I',
+          click: () => mainWindow?.webContents.send('menu:import-file'),
+        },
+        { type: 'separator' },
         { role: 'quit' },
       ],
     },

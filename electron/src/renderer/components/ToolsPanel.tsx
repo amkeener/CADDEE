@@ -4,9 +4,11 @@ interface ToolsPanelProps {
   iterationHistory?: ReactNode
   parameterSliders?: ReactNode
   exportButtons?: ReactNode
+  compatibilityPanel?: ReactNode
+  liveSyncToggle?: ReactNode
 }
 
-export function ToolsPanel({ iterationHistory, parameterSliders, exportButtons }: ToolsPanelProps) {
+export function ToolsPanel({ iterationHistory, parameterSliders, exportButtons, compatibilityPanel, liveSyncToggle }: ToolsPanelProps) {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
@@ -23,9 +25,19 @@ export function ToolsPanel({ iterationHistory, parameterSliders, exportButtons }
             {parameterSliders}
           </Section>
         )}
+        {compatibilityPanel && (
+          <Section title="Compatibility">
+            {compatibilityPanel}
+          </Section>
+        )}
         {exportButtons && (
           <Section title="Export">
             {exportButtons}
+          </Section>
+        )}
+        {liveSyncToggle && (
+          <Section title="FreeCAD Sync">
+            {liveSyncToggle}
           </Section>
         )}
         {!iterationHistory && !parameterSliders && !exportButtons && (

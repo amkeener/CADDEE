@@ -34,7 +34,56 @@ export interface LoadSessionRequest {
   sessionData: Record<string, unknown>
 }
 
-export type SidecarRequest = ChatRequest | PingRequest | UpdateParametersRequest | SaveSessionRequest | LoadSessionRequest
+export interface CompatibilityCheckRequest {
+  id: string
+  type: 'check_compatibility'
+  stlBase64: string
+}
+
+export interface ExportStepRequest {
+  id: string
+  type: 'export_step'
+  stlBase64: string
+  outputPath: string
+}
+
+export interface ExportFcstdRequest {
+  id: string
+  type: 'export_fcstd'
+  stlBase64: string
+  outputPath: string
+}
+
+export interface ImportFileRequest {
+  id: string
+  type: 'import_file'
+  filePath: string
+}
+
+export interface LiveSyncRequest {
+  id: string
+  type: 'live_sync'
+  stlBase64: string
+  action: 'push' | 'check'
+}
+
+export interface CapabilitiesRequest {
+  id: string
+  type: 'get_capabilities'
+}
+
+export type SidecarRequest =
+  | ChatRequest
+  | PingRequest
+  | UpdateParametersRequest
+  | SaveSessionRequest
+  | LoadSessionRequest
+  | CompatibilityCheckRequest
+  | ExportStepRequest
+  | ExportFcstdRequest
+  | ImportFileRequest
+  | LiveSyncRequest
+  | CapabilitiesRequest
 
 // --- Responses (Sidecar -> Electron) ---
 
@@ -85,7 +134,74 @@ export interface SessionLoadedResponse {
   message: string
 }
 
-export type SidecarResponse = ChatResponse | ChatErrorResponse | PongResponse | ErrorResponse | ParameterResponse | SessionDataResponse | SessionLoadedResponse
+export interface CompatibilityCheck {
+  name: string
+  passed: boolean
+  severity: 'info' | 'warning' | 'error'
+  message: string
+}
+
+export interface CompatibilityResponse {
+  id: string
+  type: 'compatibility_result'
+  checks: CompatibilityCheck[]
+  stats: Record<string, number | string>
+  overall: 'pass' | 'warning' | 'fail' | 'unknown'
+}
+
+export interface ExportResultResponse {
+  id: string
+  type: 'export_result'
+  success: boolean
+  outputPath?: string
+  error?: string
+}
+
+export interface ImportResultResponse {
+  id: string
+  type: 'import_result'
+  success: boolean
+  fileType: 'stl' | 'scad' | 'step' | 'fcstd' | 'unknown'
+  scadCode?: string
+  stlBase64?: string
+  metadata: Record<string, unknown>
+  error?: string
+}
+
+export interface LiveSyncResponse {
+  id: string
+  type: 'live_sync_result'
+  success: boolean
+  connected: boolean
+  error?: string
+}
+
+export interface CapabilitiesResponse {
+  id: string
+  type: 'capabilities'
+  capabilities: {
+    trimeshAvailable: boolean
+    freecadAvailable: boolean
+    meshAnalysis: boolean
+    stepExport: boolean
+    fcstdExport: boolean
+    liveSync: boolean
+  }
+}
+
+export type SidecarResponse =
+  | ChatResponse
+  | ChatErrorResponse
+  | PongResponse
+  | ErrorResponse
+  | ParameterResponse
+  | SessionDataResponse
+  | SessionLoadedResponse
+  | CompatibilityResponse
+  | ExportResultResponse
+  | ImportResultResponse
+  | LiveSyncResponse
+  | CapabilitiesResponse
 
 // --- Shared Types ---
 

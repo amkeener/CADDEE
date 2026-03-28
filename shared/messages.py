@@ -33,7 +33,76 @@ class UpdateParametersRequest:
     type: Literal["update_parameters"] = "update_parameters"
 
 
-SidecarRequest = ChatRequest | PingRequest | UpdateParametersRequest
+@dataclass
+class SaveSessionRequest:
+    id: str
+    type: Literal["save_session"] = "save_session"
+
+
+@dataclass
+class LoadSessionRequest:
+    id: str
+    session_data: dict = field(default_factory=dict)
+    type: Literal["load_session"] = "load_session"
+
+
+@dataclass
+class CompatibilityCheckRequest:
+    id: str
+    stl_base64: str = ""
+    type: Literal["check_compatibility"] = "check_compatibility"
+
+
+@dataclass
+class ExportStepRequest:
+    id: str
+    stl_base64: str = ""
+    output_path: str = ""
+    type: Literal["export_step"] = "export_step"
+
+
+@dataclass
+class ExportFcstdRequest:
+    id: str
+    stl_base64: str = ""
+    output_path: str = ""
+    type: Literal["export_fcstd"] = "export_fcstd"
+
+
+@dataclass
+class ImportFileRequest:
+    id: str
+    file_path: str = ""
+    type: Literal["import_file"] = "import_file"
+
+
+@dataclass
+class LiveSyncRequest:
+    id: str
+    stl_base64: str = ""
+    action: Literal["push", "check"] = "push"
+    type: Literal["live_sync"] = "live_sync"
+
+
+@dataclass
+class CapabilitiesRequest:
+    id: str
+    type: Literal["get_capabilities"] = "get_capabilities"
+
+
+SidecarRequest = (
+    ChatRequest
+    | PingRequest
+    | UpdateParametersRequest
+    | SaveSessionRequest
+    | LoadSessionRequest
+    | CompatibilityCheckRequest
+    | ExportStepRequest
+    | ExportFcstdRequest
+    | ImportFileRequest
+    | LiveSyncRequest
+    | CapabilitiesRequest
+)
 
 
 # --- Responses (Sidecar -> Electron) ---
@@ -79,7 +148,80 @@ class ParameterResponse:
     type: Literal["parameter_response"] = "parameter_response"
 
 
-SidecarResponse = ChatResponse | ChatErrorResponse | PongResponse | ErrorResponse | ParameterResponse
+@dataclass
+class SessionDataResponse:
+    id: str
+    session_data: dict = field(default_factory=dict)
+    type: Literal["session_data"] = "session_data"
+
+
+@dataclass
+class SessionLoadedResponse:
+    id: str
+    message: str = "Session loaded"
+    type: Literal["session_loaded"] = "session_loaded"
+
+
+@dataclass
+class CompatibilityResponse:
+    id: str
+    checks: list[dict] = field(default_factory=list)
+    stats: dict = field(default_factory=dict)
+    overall: str = "unknown"
+    type: Literal["compatibility_result"] = "compatibility_result"
+
+
+@dataclass
+class ExportResponse:
+    id: str
+    success: bool = False
+    output_path: str | None = None
+    error: str | None = None
+    type: Literal["export_result"] = "export_result"
+
+
+@dataclass
+class ImportResponse:
+    id: str
+    success: bool = False
+    file_type: str = "unknown"
+    scad_code: str | None = None
+    stl_base64: str | None = None
+    metadata: dict = field(default_factory=dict)
+    error: str | None = None
+    type: Literal["import_result"] = "import_result"
+
+
+@dataclass
+class LiveSyncResponse:
+    id: str
+    success: bool = False
+    connected: bool = False
+    error: str | None = None
+    type: Literal["live_sync_result"] = "live_sync_result"
+
+
+@dataclass
+class CapabilitiesResponse:
+    id: str
+    capabilities: dict = field(default_factory=dict)
+    type: Literal["capabilities"] = "capabilities"
+
+
+SidecarResponse = (
+    ChatResponse
+    | ChatErrorResponse
+    | PongResponse
+    | ErrorResponse
+    | ParameterResponse
+    | SessionDataResponse
+    | SessionLoadedResponse
+    | CompatibilityResponse
+    | ExportResponse
+    | ImportResponse
+    | LiveSyncResponse
+    | CapabilitiesResponse
+)
 
 
 # --- Shared Types ---

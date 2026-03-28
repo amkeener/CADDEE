@@ -25,7 +25,25 @@ const api = {
     return ipcRenderer.invoke('session:open')
   },
 
+  // Phase 3 exports
+  exportStep: (stlBase64: string): Promise<{ success: boolean; path?: string; error?: string }> => {
+    return ipcRenderer.invoke('export:step', stlBase64)
+  },
+  exportFcstd: (stlBase64: string): Promise<{ success: boolean; path?: string; error?: string }> => {
+    return ipcRenderer.invoke('export:fcstd', stlBase64)
+  },
+
+  // Import
+  importFile: (): Promise<{ success: boolean; filePath?: string }> => {
+    return ipcRenderer.invoke('import:file')
+  },
+
   // Menu events
+  onMenuImportFile: (callback: () => void): (() => void) => {
+    const handler = () => callback()
+    ipcRenderer.on('menu:import-file', handler)
+    return () => ipcRenderer.removeListener('menu:import-file', handler)
+  },
   onMenuSaveSession: (callback: () => void): (() => void) => {
     const handler = () => callback()
     ipcRenderer.on('menu:save-session', handler)

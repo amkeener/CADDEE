@@ -1,11 +1,17 @@
 interface ExportButtonsProps {
   currentScad: string
   currentStlBase64: string
+  capabilities?: {
+    stepExport: boolean
+    fcstdExport: boolean
+  }
 }
 
-export function ExportButtons({ currentScad, currentStlBase64 }: ExportButtonsProps) {
+export function ExportButtons({ currentScad, currentStlBase64, capabilities }: ExportButtonsProps) {
   const hasModel = currentStlBase64.length > 0
   const hasScad = currentScad.length > 0
+  const canStep = capabilities?.stepExport ?? false
+  const canFcstd = capabilities?.fcstdExport ?? false
 
   const handleExportSTL = async () => {
     if (!hasModel) return
@@ -17,36 +23,69 @@ export function ExportButtons({ currentScad, currentStlBase64 }: ExportButtonsPr
     await window.caddee.exportScad(currentScad)
   }
 
+  const handleExportStep = async () => {
+    if (!hasModel) return
+    await window.caddee.exportStep(currentStlBase64)
+  }
+
+  const handleExportFcstd = async () => {
+    if (!hasModel) return
+    await window.caddee.exportFcstd(currentStlBase64)
+  }
+
   return (
     <div style={styles.container}>
-      <button
-        onClick={handleExportSTL}
-        disabled={!hasModel}
-        style={{
-          ...styles.button,
-          opacity: hasModel ? 1 : 0.4,
-          cursor: hasModel ? 'pointer' : 'not-allowed',
-        }}
-      >
-        Save STL
-      </button>
-      <button
-        onClick={handleExportScad}
-        disabled={!hasScad}
-        style={{
-          ...styles.button,
-          opacity: hasScad ? 1 : 0.4,
-          cursor: hasScad ? 'pointer' : 'not-allowed',
-        }}
-      >
-        Save .scad
-      </button>
+      <div style={styles.row}>
+        <ExportBtn label="Save STL" onClick={handleExportSTL} enabled={hasModel} />
+        <ExportBtn label="Save .scad" onClick={handleExportScad} enabled={hasScad} />
+      </div>
+      <div style={styles.row}>
+        <ExportBtn
+          label="Export STEP"
+          onClick={handleExportStep}
+          enabled={hasModel && canStep}
+          tooltip={!canStep ? 'Requires FreeCAD' : undefined}
+        />
+        <ExportBtn
+          label="Export .FCStd"
+          onClick={handleExportFcstd}
+          enabled={hasModel && canFcstd}
+          tooltip={!canFcstd ? 'Requires FreeCAD' : undefined}
+        />
+      </div>
     </div>
+  )
+}
+
+function ExportBtn({ label, onClick, enabled, tooltip }: {
+  label: string
+  onClick: () => void
+  enabled: boolean
+  tooltip?: string
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={!enabled}
+      title={tooltip}
+      style={{
+        ...styles.button,
+        opacity: enabled ? 1 : 0.4,
+        cursor: enabled ? 'pointer' : 'not-allowed',
+      }}
+    >
+      {label}
+    </button>
   )
 }
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+  },
+  row: {
     display: 'flex',
     gap: 8,
   },
