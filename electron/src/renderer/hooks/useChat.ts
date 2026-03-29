@@ -1,5 +1,8 @@
 import { useState, useCallback } from 'react'
 import type { ChatMessage, ChatStatus } from '../types/messages'
+import { createLogger } from '../utils/logger'
+
+const log = createLogger('chat')
 
 export interface UseChatReturn {
   messages: ChatMessage[]
@@ -32,10 +35,12 @@ export function useChat(
 
     // Build the IPC request
     const requestId = crypto.randomUUID()
+    log.info('Sending chat: %d chars, %d images', trimmed.length, images?.length ?? 0)
     setStatus('thinking')
     onCompileStateChange(true)
 
     try {
+      const t0 = performance.now()
       const response = await window.caddee.sendToSidecar({
         id: requestId,
         type: 'chat',
@@ -43,7 +48,10 @@ export function useChat(
         images: images && images.length > 0 ? images : undefined,
       })
 
+      const elapsed = ((performance.now() - t0) / 1000).toFixed(1)
+
       if (response.type === 'chat_response') {
+        log.info('Chat response received in %ss (stl=%s)', elapsed, response.stlBase64 ? 'yes' : 'no')
         // Successful generation
         const assistantMsg: ChatMessage = {
           id: crypto.randomUUID(),
@@ -69,6 +77,7 @@ export function useChat(
 
         setStatus('idle')
       } else if (response.type === 'chat_error') {
+        log.error('Chat error in %ss: %s', elapsed, response.error)
         const errorContent = response.compileError
           ? `${response.error}\n\nCompile error:\n${response.compileError}`
           : response.error
@@ -92,6 +101,7 @@ export function useChat(
         setStatus('error')
       }
     } catch (err) {
+      log.error('Chat exception: %s', err instanceof Error ? err.message : String(err))
       const errorMsg: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'error',

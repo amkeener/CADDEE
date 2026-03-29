@@ -34,6 +34,7 @@ wip_summary.md
 # Build outputs
 out/
 build/
+electron/release/
 *.stl
 *.step
 

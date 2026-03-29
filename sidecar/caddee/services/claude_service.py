@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import re
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -57,10 +58,12 @@ def set_api_key(key: str) -> None:
     """Set the API key at runtime (called via IPC from Electron)."""
     global _api_key
     _api_key = key if key else None
+    log.info("API key %s (source: IPC)", "set" if _api_key else "cleared")
 
 
 def validate_api_key(key: str) -> str | None:
     """Validate an API key with a lightweight API call. Returns error string or None."""
+    log.debug("Validating API key (prefix=%s...)", key[:12] if len(key) > 12 else "???")
     try:
         client = anthropic.Anthropic(api_key=key)
         client.messages.create(
@@ -68,10 +71,13 @@ def validate_api_key(key: str) -> str | None:
             max_tokens=1,
             messages=[{"role": "user", "content": "hi"}],
         )
+        log.info("API key validated successfully")
         return None
     except anthropic.AuthenticationError:
+        log.warning("API key validation failed: invalid key")
         return "Invalid API key"
     except Exception as exc:
+        log.error("API key validation error: %s", exc)
         return str(exc)
 
 
@@ -113,12 +119,21 @@ def call_claude(
     # Build the messages list in the API format.
     messages = _build_messages(conversation, images)
 
+    log.debug("Calling Claude: model=%s, max_tokens=%d, msgs=%d, images=%d, key_source=%s",
+              _MODEL, _MAX_TOKENS, len(messages), len(images or []),
+              "ipc" if _api_key else "env")
+    t0 = time.monotonic()
+
     response = client.messages.create(
         model=_MODEL,
         max_tokens=_MAX_TOKENS,
         system=system_prompt,
         messages=messages,
     )
+
+    elapsed = time.monotonic() - t0
+    log.debug("Claude response: %.1fs, usage=%s", elapsed,
+              {"input": response.usage.input_tokens, "output": response.usage.output_tokens})
 
     # Extract text from the response.
     text = ""
@@ -127,6 +142,8 @@ def call_claude(
             text += block.text
 
     scad_code = _extract_scad(text)
+    log.debug("Extracted: text=%d chars, scad=%s",
+              len(text), f"{len(scad_code)} chars" if scad_code else "none")
 
     return ClaudeResult(text=text, scad_code=scad_code)
 

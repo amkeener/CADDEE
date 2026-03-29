@@ -3,11 +3,15 @@ import { join } from 'path'
 import { setupIpcHandlers } from './ipc-handlers'
 import { SidecarManager } from './sidecar'
 import { loadApiKey } from './credentials'
+import { createLogger } from './logger'
+
+const log = createLogger('app')
 
 let mainWindow: BrowserWindow | null = null
 let sidecar: SidecarManager | null = null
 
 function createWindow(): void {
+  log.info('Creating main window')
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
@@ -102,6 +106,8 @@ function buildMenu(): void {
 }
 
 app.whenReady().then(async () => {
+  log.info('App ready — starting CADDEE (version=%s, electron=%s)', app.getVersion(), process.versions.electron)
+
   sidecar = new SidecarManager()
   sidecar.start()
 
@@ -113,6 +119,8 @@ app.whenReady().then(async () => {
   const envKey = process.env.ANTHROPIC_API_KEY
   const storedKey = loadApiKey()
   const apiKey = envKey || storedKey
+  const keySource = envKey ? 'env' : storedKey ? 'stored' : 'none'
+  log.info('API key source: %s', keySource)
 
   if (apiKey) {
     try {
@@ -121,10 +129,12 @@ app.whenReady().then(async () => {
         type: 'set_api_key',
         apiKey: apiKey,
       })
+      log.info('API key sent to sidecar')
     } catch {
-      console.error('[main] Failed to send API key to sidecar')
+      log.error('Failed to send API key to sidecar')
     }
   } else {
+    log.warn('No API key configured — showing setup modal')
     // Notify renderer that no API key is configured
     mainWindow?.webContents.once('did-finish-load', () => {
       mainWindow?.webContents.send('api-key:missing')
@@ -139,6 +149,7 @@ app.whenReady().then(async () => {
 })
 
 app.on('window-all-closed', () => {
+  log.info('All windows closed')
   sidecar?.stop()
   if (process.platform !== 'darwin') {
     app.quit()
@@ -146,5 +157,6 @@ app.on('window-all-closed', () => {
 })
 
 app.on('before-quit', () => {
+  log.info('App quitting')
   sidecar?.stop()
 })

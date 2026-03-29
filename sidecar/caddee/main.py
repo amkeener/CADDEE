@@ -5,7 +5,9 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import logging.handlers
 import sys
+import time
 from dataclasses import asdict
 from pathlib import Path
 
@@ -34,14 +36,40 @@ from caddee.services.session_manager import Session
 from caddee.services import freecad_service
 
 # ---------------------------------------------------------------------------
-# Logging — write to stderr so stdout stays clean for IPC
+# Logging — stderr for console + rotating file for persistent debug logs
 # ---------------------------------------------------------------------------
 
+_LOG_DIR = Path.home() / ".caddee" / "logs"
+_LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+_LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+_LOG_DATE_FMT = "%Y-%m-%d %H:%M:%S"
+
+# Root logger config — DEBUG to capture everything
 logging.basicConfig(
     stream=sys.stderr,
-    level=logging.INFO,
-    format="[sidecar] %(levelname)s %(message)s",
+    level=logging.DEBUG,
+    format=_LOG_FORMAT,
+    datefmt=_LOG_DATE_FMT,
 )
+
+# Rotating file handler: 5 MB per file, keep 3 backups
+_file_handler = logging.handlers.RotatingFileHandler(
+    _LOG_DIR / "sidecar.log",
+    maxBytes=5 * 1024 * 1024,
+    backupCount=3,
+    encoding="utf-8",
+)
+_file_handler.setLevel(logging.DEBUG)
+_file_handler.setFormatter(logging.Formatter(_LOG_FORMAT, datefmt=_LOG_DATE_FMT))
+logging.getLogger().addHandler(_file_handler)
+
+# Quiet noisy third-party loggers
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("trimesh").setLevel(logging.WARNING)
+
 log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -57,16 +85,26 @@ _session = Session()
 
 def main() -> None:
     """Read JSON requests from stdin, write JSON responses to stdout."""
+    log.info("Sidecar process started (pid=%d)", __import__("os").getpid())
     for line in sys.stdin:
         line = line.strip()
         if not line:
             continue
         try:
             request = json.loads(line)
+            t0 = time.monotonic()
             response = handle_request(request)
+            elapsed = (time.monotonic() - t0) * 1000
+            log.debug(
+                "Request %s (%s) completed in %.1fms",
+                request.get("id", "?")[:8],
+                request.get("type", "?"),
+                elapsed,
+            )
             sys.stdout.write(json.dumps(response) + "\n")
             sys.stdout.flush()
         except Exception as exc:
+            log.exception("Unhandled exception processing request")
             req_id = "unknown"
             if isinstance(request, dict):
                 req_id = request.get("id", req_id)
@@ -84,6 +122,7 @@ def handle_request(request: dict) -> dict:
     """Route request to the appropriate handler based on the `type` field."""
     req_type = request.get("type")
     req_id = request.get("id", "unknown")
+    log.debug("Handling request id=%s type=%s", req_id[:8], req_type)
 
     if req_type == "ping":
         return asdict(PongResponse(id=req_id))
@@ -141,14 +180,20 @@ def _handle_chat(req_id: str, user_message: str, images: list[str] | None = None
     """
     # Record the user message in the session.
     _session.add_user_message(user_message)
+    log.info("Chat request: %d chars, %d images, %d conversation msgs",
+             len(user_message), len(images or []), len(_session.conversation))
 
     # --- First attempt ---------------------------------------------------
     conversation, current_scad = _session.get_context_for_claude()
+    log.debug("Context: %d messages, scad=%s", len(conversation), "yes" if current_scad else "no")
 
     try:
+        t0 = time.monotonic()
         result = call_claude(conversation, current_scad, images=images)
+        log.info("Claude responded in %.1fs, scad=%s, text=%d chars",
+                 time.monotonic() - t0, "yes" if result.scad_code else "no", len(result.text))
     except Exception as exc:
-        log.error("Claude API call failed: %s", exc)
+        log.error("Claude API call failed: %s", exc, exc_info=True)
         return asdict(ChatErrorResponse(
             id=req_id,
             error=f"Claude API error: {exc}",
@@ -166,7 +211,9 @@ def _handle_chat(req_id: str, user_message: str, images: list[str] | None = None
         ))
 
     # --- Compile first attempt -------------------------------------------
+    log.debug("Compiling first attempt (%d chars of scad)", len(result.scad_code))
     compile_result = compile_scad(result.scad_code)
+    log.debug("First compile: success=%s", compile_result.success)
 
     if compile_result.success:
         stl_b64 = _read_stl_base64(compile_result.stl_path)

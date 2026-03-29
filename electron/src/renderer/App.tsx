@@ -1,5 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { createLogger } from './utils/logger'
 import { ResizablePanes } from './components/ResizablePanes'
+
+const log = createLogger('app')
 import { Viewport } from './components/Viewport'
 import { ChatConsole } from './components/ChatConsole'
 import { ToolsPanel } from './components/ToolsPanel'
@@ -110,28 +113,35 @@ export function App() {
 
   // Fetch capabilities on mount
   useEffect(() => {
+    log.info('App mounted — fetching capabilities')
     window.caddee.sendToSidecar({
       id: crypto.randomUUID(),
       type: 'get_capabilities',
     }).then(response => {
       if (response.type === 'capabilities') {
+        log.info('Capabilities: STEP=%s, FCStd=%s',
+          response.capabilities.stepExport, response.capabilities.fcstdExport)
         setCapabilities({
           stepExport: response.capabilities.stepExport,
           fcstdExport: response.capabilities.fcstdExport,
         })
       }
-    }).catch(() => {})
+    }).catch((err) => {
+      log.error('Failed to fetch capabilities: %s', err)
+    })
   }, [])
 
   // Check API key status on mount
   useEffect(() => {
     window.caddee.getApiKeyStatus().then(result => {
+      log.info('API key status: configured=%s source=%s', result.configured, result.source)
       setApiKeyConfigured(result.configured)
       if (!result.configured) {
         setShowApiKeyModal(true)
       }
     })
     const cleanup = window.caddee.onApiKeyMissing(() => {
+      log.warn('API key missing event received')
       setApiKeyConfigured(false)
       setShowApiKeyModal(true)
     })
@@ -201,6 +211,7 @@ export function App() {
   }, [])
 
   const handleApiKeySaved = useCallback(() => {
+    log.info('API key saved successfully')
     setApiKeyConfigured(true)
   }, [])
 

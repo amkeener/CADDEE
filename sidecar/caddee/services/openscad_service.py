@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 import subprocess
 import tempfile
+import time
 from dataclasses import dataclass
 from pathlib import Path
+
+log = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -44,6 +48,9 @@ def compile_scad(scad_code: str, *, timeout: int = 60) -> CompileResult:
     -------
     CompileResult with success flag, optional STL path, and optional error.
     """
+    log.debug("compile_scad: %d chars, timeout=%ds", len(scad_code), timeout)
+    t0 = time.monotonic()
+
     # Write the .scad source to a temp file.
     scad_file = tempfile.NamedTemporaryFile(
         suffix=".scad", delete=False, mode="w", encoding="utf-8",
@@ -51,6 +58,7 @@ def compile_scad(scad_code: str, *, timeout: int = 60) -> CompileResult:
     scad_file.write(scad_code)
     scad_file.flush()
     scad_file.close()
+    log.debug("Wrote scad to %s", scad_file.name)
 
     # Prepare the output STL path (persistent temp file).
     stl_fd = tempfile.NamedTemporaryFile(suffix=".stl", delete=False)
@@ -65,6 +73,7 @@ def compile_scad(scad_code: str, *, timeout: int = 60) -> CompileResult:
             timeout=timeout,
         )
     except FileNotFoundError:
+        log.error("openscad binary not found on PATH")
         _cleanup(scad_file.name)
         _cleanup(stl_path)
         return CompileResult(
@@ -73,6 +82,7 @@ def compile_scad(scad_code: str, *, timeout: int = 60) -> CompileResult:
             error="openscad binary not found. Is OpenSCAD installed and on PATH?",
         )
     except subprocess.TimeoutExpired:
+        log.error("OpenSCAD timed out after %ds", timeout)
         _cleanup(scad_file.name)
         _cleanup(stl_path)
         return CompileResult(
@@ -84,10 +94,14 @@ def compile_scad(scad_code: str, *, timeout: int = 60) -> CompileResult:
     # Clean up the source file — we only need the STL.
     _cleanup(scad_file.name)
 
+    elapsed = (time.monotonic() - t0) * 1000
+    log.debug("OpenSCAD process exited code=%d in %.1fms", result.returncode, elapsed)
+
     # OpenSCAD returns 0 on success.  Anything else is a compile error.
     if result.returncode != 0:
-        _cleanup(stl_path)
         error_text = result.stderr.strip() or result.stdout.strip() or "Unknown OpenSCAD error"
+        log.warning("OpenSCAD compile failed: %s", error_text[:200])
+        _cleanup(stl_path)
         return CompileResult(success=False, stl_path=None, error=error_text)
 
     # Verify the STL file was actually created and is non-empty.
@@ -97,6 +111,8 @@ def compile_scad(scad_code: str, *, timeout: int = 60) -> CompileResult:
         error_text = result.stderr.strip() or "OpenSCAD produced an empty STL file."
         return CompileResult(success=False, stl_path=None, error=error_text)
 
+    stl_size = stl.stat().st_size
+    log.info("OpenSCAD compile succeeded: %s (%d bytes) in %.1fms", stl_path, stl_size, elapsed)
     return CompileResult(success=True, stl_path=stl_path, error=None)
 
 

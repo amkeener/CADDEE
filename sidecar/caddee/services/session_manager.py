@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import logging
 import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+
+log = logging.getLogger(__name__)
 
 # Ensure the CADDEE project root is on sys.path so `shared` is importable.
 _PROJECT_ROOT = str(Path(__file__).resolve().parent.parent.parent.parent)
@@ -37,6 +40,8 @@ class Session:
         self.conversation.append(
             ConversationMessage(role="user", content=text),
         )
+        log.debug("Session: added user message (%d chars), total=%d msgs",
+                   len(text), len(self.conversation))
 
     def add_assistant_response(
         self,
@@ -71,6 +76,8 @@ class Session:
                     timestamp=time.time(),
                 ),
             )
+            log.info("Session: new iteration #%d (scad=%d chars, stl=%d chars b64)",
+                     len(self.iterations), len(scad_code), len(stl_base64))
 
     def get_context_for_claude(
         self,
@@ -89,6 +96,8 @@ class Session:
 
     def to_dict(self) -> dict:
         """Serialize session state for save/restore."""
+        log.debug("Session: serializing (%d msgs, %d iterations)",
+                   len(self.conversation), len(self.iterations))
         return {
             "version": 1,
             "conversation": [
@@ -109,6 +118,7 @@ class Session:
     @classmethod
     def from_dict(cls, data: dict) -> "Session":
         """Restore session from serialized data."""
+        log.info("Session: restoring from dict (version=%s)", data.get("version", "?"))
         session = cls()
         for msg in data.get("conversation", []):
             session.conversation.append(

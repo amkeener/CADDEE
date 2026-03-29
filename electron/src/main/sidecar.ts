@@ -2,6 +2,9 @@ import { ChildProcess, spawn } from 'child_process'
 import { join } from 'path'
 import { EventEmitter } from 'events'
 import type { SidecarRequest, SidecarResponse } from '../../../shared/messages'
+import { createLogger } from './logger'
+
+const log = createLogger('sidecar')
 
 export class SidecarManager extends EventEmitter {
   private process: ChildProcess | null = null
@@ -29,20 +32,22 @@ export class SidecarManager extends EventEmitter {
     })
 
     this.process.stderr?.on('data', (data: Buffer) => {
-      console.error('[sidecar stderr]', data.toString())
+      const text = data.toString().trim()
+      if (text) log.debug('stderr: %s', text)
     })
 
     this.process.on('exit', (code) => {
-      console.log(`[sidecar] exited with code ${code}`)
+      log.warn('Process exited with code %d', code ?? -1)
       this.process = null
       this.rejectAllPending(new Error(`Sidecar exited with code ${code}`))
     })
 
-    console.log('[sidecar] started')
+    log.info('Process started (pid=%d)', this.process.pid ?? 0)
   }
 
   stop(): void {
     if (this.process) {
+      log.info('Stopping sidecar process')
       this.process.kill()
       this.process = null
     }
@@ -50,11 +55,22 @@ export class SidecarManager extends EventEmitter {
 
   async send(request: SidecarRequest): Promise<SidecarResponse> {
     if (!this.process?.stdin) {
+      log.error('Cannot send — sidecar not running')
       throw new Error('Sidecar not running')
     }
 
+    log.debug('Sending: id=%s type=%s', request.id.slice(0, 8), request.type)
+    const sendTime = Date.now()
+
     return new Promise((resolve, reject) => {
-      this.pendingCallbacks.set(request.id, { resolve, reject })
+      this.pendingCallbacks.set(request.id, {
+        resolve: (value) => {
+          log.debug('Response: id=%s type=%s (%dms)',
+            request.id.slice(0, 8), value.type, Date.now() - sendTime)
+          resolve(value)
+        },
+        reject,
+      })
       const line = JSON.stringify(request) + '\n'
       this.process!.stdin!.write(line)
     })
@@ -74,7 +90,7 @@ export class SidecarManager extends EventEmitter {
           callback.resolve(response)
         }
       } catch {
-        console.error('[sidecar] failed to parse:', line)
+        log.error('Failed to parse response: %s', line.slice(0, 200))
       }
     }
   }

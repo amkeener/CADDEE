@@ -2,6 +2,11 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { SidecarRequest, SidecarResponse } from '../../../shared/messages'
 
 const api = {
+  // Logging — forward renderer logs to main process log file
+  log: (level: string, component: string, message: string): void => {
+    ipcRenderer.send('log:write', level, component, message)
+  },
+
   sendToSidecar: (request: SidecarRequest): Promise<SidecarResponse> => {
     return ipcRenderer.invoke('sidecar:send', request)
   },
