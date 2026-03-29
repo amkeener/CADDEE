@@ -1,4 +1,5 @@
 import type { Iteration } from '../App'
+import { colors } from '../theme/colors'
 
 interface IterationHistoryProps {
   iterations: Iteration[]
@@ -53,8 +54,8 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 10,
     alignItems: 'center',
     padding: '6px 8px',
-    background: '#1a1a2e',
-    border: '1px solid #2a2a3e',
+    background: colors.bgElevated,
+    border: `1px solid ${colors.border}`,
     borderRadius: 6,
     cursor: 'pointer',
     textAlign: 'left',
@@ -68,7 +69,7 @@ const styles: Record<string, React.CSSProperties> = {
     height: 48,
     borderRadius: 4,
     overflow: 'hidden',
-    background: '#13132a',
+    background: colors.bgPanel,
   },
   thumb: {
     width: '100%',
@@ -81,7 +82,7 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: '#555',
+    color: colors.textMuted,
     fontSize: 16,
     fontWeight: 600,
   },
@@ -92,7 +93,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   prompt: {
     fontSize: 12,
-    color: '#ccc',
+    color: colors.textPrimary,
     lineHeight: 1.3,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -100,11 +101,11 @@ const styles: Record<string, React.CSSProperties> = {
   },
   time: {
     fontSize: 10,
-    color: '#555',
+    color: colors.textMuted,
     marginTop: 3,
   },
   empty: {
-    color: '#555',
+    color: colors.textMuted,
     fontSize: 12,
   },
 }

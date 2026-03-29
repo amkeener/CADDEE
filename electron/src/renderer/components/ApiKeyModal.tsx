@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
+import { colors } from '../theme/colors'
 
 interface ApiKeyModalProps {
   onClose: () => void
@@ -68,7 +69,7 @@ export function ApiKeyModal({ onClose, onKeySaved, canClose }: ApiKeyModalProps)
             <span style={styles.statusLabel}>Status:</span>
             <span style={{
               ...styles.statusValue,
-              color: keySource === 'none' ? '#ff6b6b' : '#51cf66',
+              color: keySource === 'none' ? colors.error : colors.success,
             }}>
               {keySource === 'env' && 'Configured (environment variable)'}
               {keySource === 'stored' && 'Configured (stored)'}
@@ -156,9 +157,9 @@ const styles: Record<string, React.CSSProperties> = {
     zIndex: 1000,
   },
   modal: {
-    background: '#1a1a2e',
+    background: colors.bgElevated,
     borderRadius: 12,
-    border: '1px solid #2a2a3e',
+    border: `1px solid ${colors.border}`,
     width: 440,
     maxWidth: '90vw',
     boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
@@ -168,17 +169,17 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '16px 20px',
-    borderBottom: '1px solid #2a2a3e',
+    borderBottom: `1px solid ${colors.border}`,
   },
   title: {
     fontSize: 16,
     fontWeight: 600,
-    color: '#fff',
+    color: colors.textPrimary,
   },
   closeButton: {
     background: 'none',
     border: 'none',
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 18,
     cursor: 'pointer',
     padding: '2px 6px',
@@ -195,7 +196,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   statusLabel: {
     fontSize: 13,
-    color: '#888',
+    color: colors.textSecondary,
   },
   statusValue: {
     fontSize: 13,
@@ -204,7 +205,7 @@ const styles: Record<string, React.CSSProperties> = {
   label: {
     display: 'block',
     fontSize: 13,
-    color: '#ccc',
+    color: colors.textPrimary,
     marginBottom: 6,
   },
   inputRow: {
@@ -215,8 +216,8 @@ const styles: Record<string, React.CSSProperties> = {
   input: {
     flex: 1,
     padding: '10px 12px',
-    background: '#0f0f23',
-    border: '1px solid #333',
+    background: colors.bgBase,
+    border: `1px solid ${colors.border}`,
     borderRadius: 6,
     color: '#fff',
     fontSize: 14,
@@ -225,21 +226,21 @@ const styles: Record<string, React.CSSProperties> = {
   },
   toggleButton: {
     padding: '8px 12px',
-    background: '#2a2a3e',
-    border: '1px solid #333',
+    background: colors.bgHover,
+    border: `1px solid ${colors.border}`,
     borderRadius: 6,
-    color: '#ccc',
+    color: colors.textPrimary,
     fontSize: 12,
     cursor: 'pointer',
     whiteSpace: 'nowrap',
   },
   errorText: {
-    color: '#ff6b6b',
+    color: colors.error,
     fontSize: 13,
     marginBottom: 12,
   },
   successText: {
-    color: '#51cf66',
+    color: colors.success,
     fontSize: 13,
     marginBottom: 12,
   },
@@ -250,7 +251,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   saveButton: {
     padding: '10px 24px',
-    background: '#7c8aff',
+    background: colors.primary,
     border: 'none',
     borderRadius: 6,
     color: '#fff',
@@ -261,22 +262,22 @@ const styles: Record<string, React.CSSProperties> = {
   clearButton: {
     padding: '10px 16px',
     background: 'transparent',
-    border: '1px solid #444',
+    border: `1px solid ${colors.borderStrong}`,
     borderRadius: 6,
-    color: '#ccc',
+    color: colors.textPrimary,
     fontSize: 13,
     cursor: 'pointer',
   },
   helpRow: {
-    borderTop: '1px solid #2a2a3e',
+    borderTop: `1px solid ${colors.border}`,
     paddingTop: 14,
   },
   helpText: {
     fontSize: 12,
-    color: '#888',
+    color: colors.textSecondary,
   },
   link: {
-    color: '#7c8aff',
+    color: colors.gold,
     textDecoration: 'none',
   },
 }

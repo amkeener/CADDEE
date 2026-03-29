@@ -10,6 +10,7 @@ export interface ChatRequest {
   type: 'chat'
   message: string
   images?: string[]  // base64-encoded images (Phase 4)
+  stlBase64?: string // currently loaded STL for model context
 }
 
 export interface PingRequest {

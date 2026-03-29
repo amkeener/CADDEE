@@ -15,6 +15,7 @@ export function useChat(
   onStlUpdate: (data: ArrayBuffer | null, scadCode?: string, stlBase64?: string) => void,
   onCompileStateChange: (compiling: boolean) => void,
   onIteration?: (prompt: string, scadCode: string, stlBase64: string) => void,
+  currentStlBase64?: string,
 ): UseChatReturn {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [status, setStatus] = useState<ChatStatus>('idle')
@@ -46,6 +47,7 @@ export function useChat(
         type: 'chat',
         message: trimmed,
         images: images && images.length > 0 ? images : undefined,
+        stlBase64: currentStlBase64 || undefined,
       })
 
       const elapsed = ((performance.now() - t0) / 1000).toFixed(1)
@@ -113,7 +115,7 @@ export function useChat(
     } finally {
       onCompileStateChange(false)
     }
-  }, [onStlUpdate, onCompileStateChange, onIteration])
+  }, [onStlUpdate, onCompileStateChange, onIteration, currentStlBase64])
 
   return { messages, status, sendMessage, setMessages }
 }

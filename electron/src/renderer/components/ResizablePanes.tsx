@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect, type ReactNode } from 'react'
+import { colors } from '../theme/colors'
 
 interface ResizablePanesProps {
   left: ReactNode
@@ -102,7 +103,7 @@ const styles: Record<string, React.CSSProperties> = {
   handle: {
     width: 4,
     cursor: 'col-resize',
-    background: '#2a2a3e',
+    background: colors.border,
     flexShrink: 0,
     transition: 'background 0.15s',
   },

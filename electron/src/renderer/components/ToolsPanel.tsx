@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { colors } from '../theme/colors'
 
 interface ToolsPanelProps {
   iterationHistory?: ReactNode
@@ -73,21 +74,21 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
-    background: '#0f0f23',
-    color: '#ccc',
+    background: colors.bgBase,
+    color: colors.textPrimary,
   },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '14px 16px',
-    borderBottom: '1px solid #2a2a3e',
+    borderBottom: `1px solid ${colors.border}`,
     flexShrink: 0,
   },
   headerTitle: {
     fontSize: 15,
     fontWeight: 600,
-    color: '#fff',
+    color: colors.textPrimary,
     letterSpacing: 0.5,
   },
   content: {
@@ -101,7 +102,7 @@ const styles: Record<string, React.CSSProperties> = {
   sectionTitle: {
     fontSize: 11,
     fontWeight: 600,
-    color: '#888',
+    color: colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: 10,
@@ -109,14 +110,14 @@ const styles: Record<string, React.CSSProperties> = {
   gearButton: {
     background: 'none',
     border: 'none',
-    color: '#888',
+    color: colors.textSecondary,
     cursor: 'pointer',
     padding: 4,
     display: 'flex',
     alignItems: 'center',
   },
   empty: {
-    color: '#555',
+    color: colors.textMuted,
     fontSize: 13,
     textAlign: 'center',
     marginTop: 40,

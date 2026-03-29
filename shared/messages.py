@@ -18,6 +18,7 @@ class ChatRequest:
     type: Literal["chat"] = "chat"
     message: str = ""
     images: list[str] = field(default_factory=list)  # base64-encoded (Phase 4)
+    stl_base64: str | None = None  # currently loaded STL for model context
 
 
 @dataclass

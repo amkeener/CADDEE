@@ -1,0 +1,41 @@
+date: '2026-03-29'
+submodule: null
+commits_analyzed: 4
+domains_from_commits:
+- api_integration
+- react_frontend
+hot_files: []
+commit_types:
+  feat: 1
+  fix: 1
+  chore: 1
+  other: 1
+sessions_analyzed: 0
+total_duration_minutes: 0
+files_created: []
+files_modified: []
+workflows_used:
+  build: 3
+  plan: 1
+experts_used:
+  caddee-ipc, caddee-electron, caddee-sidecar: 1
+  none (CADDEE experts not yet created): 1
+  caddee-sidecar: 1
+  caddee-ipc (primary), caddee-electron, caddee-sidecar: 1
+expert_outcomes:
+  caddee-ipc, caddee-electron, caddee-sidecar:
+    unknown: 1
+  none (CADDEE experts not yet created):
+    unknown: 1
+  caddee-sidecar:
+    unknown: 1
+  caddee-ipc (primary), caddee-electron, caddee-sidecar:
+    unknown: 1
+feedback_entries: 0
+positive_feedback: 0
+negative_feedback: 0
+insights:
+- 'Normal activity: 4 commits analyzed'
+- 'Primary work type: feat (1 commits)'
+patterns_discovered: []
+errors_cataloged: []

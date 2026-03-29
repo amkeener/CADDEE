@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { parseScadParams, updateScadParam, type ScadParam } from '../utils/scadParser'
+import { colors } from '../theme/colors'
 
 interface ParameterSlidersProps {
   scadCode: string
@@ -90,7 +91,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   sectionLabel: {
     fontSize: 10,
-    color: '#666',
+    color: colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginTop: 8,
@@ -106,21 +107,21 @@ const styles: Record<string, React.CSSProperties> = {
   },
   paramName: {
     fontSize: 12,
-    color: '#aaa',
+    color: colors.textSecondary,
   },
   paramValue: {
     fontSize: 12,
-    color: '#5588ff',
+    color: colors.sand,
     fontVariantNumeric: 'tabular-nums',
   },
   slider: {
     width: '100%',
     height: 4,
     cursor: 'pointer',
-    accentColor: '#5588ff',
+    accentColor: colors.primary,
   },
   empty: {
-    color: '#555',
+    color: colors.textMuted,
     fontSize: 12,
   },
 }

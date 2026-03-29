@@ -77,9 +77,13 @@ function write(level: LogLevel, component: string, message: string, ...args: unk
 
   const line = `${formatTimestamp()} [${level.toUpperCase().padEnd(5)}] ${component}: ${formatted}\n`
 
-  // Console output
-  const consoleFn = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log
-  consoleFn(`[${component}] ${formatted}`)
+  // Console output (skip when stdout is not connected, e.g. Launchpad launch)
+  try {
+    const consoleFn = level === 'error' ? console.error : level === 'warn' ? console.warn : console.log
+    consoleFn(`[${component}] ${formatted}`)
+  } catch {
+    // EPIPE — no terminal attached, ignore
+  }
 
   // File output
   try {

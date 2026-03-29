@@ -101,6 +101,14 @@ Socket connection for live sync uses FreeCAD's built-in Python interpreter.
 - [x] **CADDEE ADW Experts**: Created all three domain experts — caddee-electron, caddee-sidecar, caddee-ipc. Each references coding standards and is registered in the orchestrator's verified_experts list.
 - [x] **README.md**: Project README with architecture overview, setup instructions, and dev workflow.
 - [x] **Coding Standards**: Created language-specific standards (TypeScript, Python, IPC) in `project/coding-standards/`. Enforced during `/build_adw` (step 5.1) and `/code_review_adw` (step 5.1) via expert `coding_standards` field.
+- [x] **Golf-themed color palette**: Applied dark green/sand/gold palette across all 10+ renderer components (2026-03-29)
+- [x] **Launchpad packaging fixes**: EPIPE crash, sidecar path resolution, PATH for GUI launches, codesign .venv exclusion, icon regeneration (2026-03-29)
+- [x] **IPC camelCase fix**: Added `_camelize()` in sidecar to convert Python snake_case dict keys to camelCase for TypeScript (2026-03-29)
+- [x] **`npm run install-app` script**: One-command build+install that properly replaces the .app bundle (2026-03-29)
+- [x] **FreeCAD subprocess integration**: FreeCAD (Python 3.11) runs via subprocess from sidecar (Python 3.12) — enables STEP/FCStd import/export (2026-03-29)
+- [x] **New Session menu item**: File > New Session (Cmd+N) clears all state (2026-03-29)
+- [x] **Model context for Claude**: Chat sends current STL to sidecar for mesh analysis, injected into Claude's system prompt (2026-03-29)
+- [x] **Import-to-OpenSCAD wrapper**: Imported STL/STEP/FCStd files get an OpenSCAD `import()` wrapper so Claude can modify them with boolean ops (2026-03-29)
 
 ---
 

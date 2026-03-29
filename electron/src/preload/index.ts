@@ -49,6 +49,11 @@ const api = {
     ipcRenderer.on('menu:import-file', handler)
     return () => ipcRenderer.removeListener('menu:import-file', handler)
   },
+  onMenuNewSession: (callback: () => void): (() => void) => {
+    const handler = () => callback()
+    ipcRenderer.on('menu:new-session', handler)
+    return () => ipcRenderer.removeListener('menu:new-session', handler)
+  },
   onMenuSaveSession: (callback: () => void): (() => void) => {
     const handler = () => callback()
     ipcRenderer.on('menu:save-session', handler)

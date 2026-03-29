@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import type { CompatibilityCheck } from '../../../../shared/messages'
+import { colors } from '../theme/colors'
 
 interface CompatibilityPanelProps {
   currentStlBase64: string
@@ -21,10 +22,10 @@ const severityIcon: Record<string, string> = {
 }
 
 const overallColor: Record<Overall, string> = {
-  pass: '#4caf50',
-  warning: '#ff9800',
-  fail: '#f44336',
-  unknown: '#666',
+  pass: colors.success,
+  warning: colors.warning,
+  fail: colors.error,
+  unknown: colors.textMuted,
 }
 
 export function CompatibilityPanel({ currentStlBase64, autoCheck = true }: CompatibilityPanelProps) {
@@ -153,10 +154,10 @@ const styles: Record<string, React.CSSProperties> = {
   },
   checkButton: {
     padding: '6px 14px',
-    background: '#1a1a2e',
-    border: '1px solid #333',
+    background: colors.bgElevated,
+    border: `1px solid ${colors.border}`,
     borderRadius: 6,
-    color: '#ccc',
+    color: colors.textPrimary,
     fontSize: 12,
     fontWeight: 500,
     fontFamily: 'inherit',
@@ -168,7 +169,7 @@ const styles: Record<string, React.CSSProperties> = {
     letterSpacing: 1,
   },
   errorText: {
-    color: '#f44336',
+    color: colors.error,
     fontSize: 12,
     padding: '4px 0',
   },
@@ -181,7 +182,7 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     gap: 8,
     padding: '6px 8px',
-    background: '#12122a',
+    background: colors.bgPanel,
     borderRadius: 4,
   },
   checkIcon: {
@@ -196,24 +197,24 @@ const styles: Record<string, React.CSSProperties> = {
   checkName: {
     fontSize: 12,
     fontWeight: 600,
-    color: '#ddd',
+    color: colors.textPrimary,
     marginBottom: 2,
   },
   checkMessage: {
     fontSize: 11,
-    color: '#999',
+    color: colors.textSecondary,
     lineHeight: 1.4,
   },
   statsSection: {
     marginTop: 4,
     padding: '8px',
-    background: '#12122a',
+    background: colors.bgPanel,
     borderRadius: 4,
   },
   statsTitle: {
     fontSize: 11,
     fontWeight: 600,
-    color: '#888',
+    color: colors.textSecondary,
     textTransform: 'uppercase' as const,
     letterSpacing: 0.8,
     marginBottom: 6,
@@ -225,15 +226,15 @@ const styles: Record<string, React.CSSProperties> = {
   },
   statKey: {
     fontSize: 11,
-    color: '#999',
+    color: colors.textSecondary,
   },
   statVal: {
     fontSize: 11,
-    color: '#ddd',
+    color: colors.textPrimary,
     fontFamily: 'monospace',
   },
   empty: {
-    color: '#555',
+    color: colors.textMuted,
     fontSize: 12,
     textAlign: 'center',
     padding: '8px 0',

@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { colors } from '../theme/colors'
 
 interface LiveSyncToggleProps {
   currentStlBase64: string
@@ -91,7 +92,7 @@ export function LiveSyncToggle({ currentStlBase64, enabled, onToggle }: LiveSync
         </label>
         <span style={{
           ...styles.statusDot,
-          background: !enabled ? '#555' : connected ? '#4caf50' : '#f44336',
+          background: !enabled ? colors.textMuted : connected ? colors.success : colors.error,
         }} />
         <span style={styles.statusText}>
           {!enabled ? 'Off' : connected ? (syncing ? 'Syncing...' : 'Connected') : 'Disconnected'}
@@ -123,11 +124,11 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: 6,
     fontSize: 13,
-    color: '#ccc',
+    color: colors.textPrimary,
     cursor: 'pointer',
   },
   checkbox: {
-    accentColor: '#7c8aff',
+    accentColor: colors.primary,
   },
   statusDot: {
     width: 8,
@@ -137,15 +138,15 @@ const styles: Record<string, React.CSSProperties> = {
   },
   statusText: {
     fontSize: 11,
-    color: '#888',
+    color: colors.textSecondary,
   },
   error: {
-    color: '#f44336',
+    color: colors.error,
     fontSize: 11,
     padding: '4px 0',
   },
   hint: {
-    color: '#666',
+    color: colors.textMuted,
     fontSize: 11,
     lineHeight: 1.4,
   },

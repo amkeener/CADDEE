@@ -1,10 +1,16 @@
-"""FreeCAD integration service — mesh analysis (trimesh) and CAD export (FreeCAD)."""
+"""FreeCAD integration service — mesh analysis (trimesh) and CAD export (FreeCAD).
+
+FreeCAD ships its own Python (3.11) which differs from the sidecar's Python.
+All FreeCAD operations are executed via subprocess using FreeCAD's bundled Python.
+"""
 
 from __future__ import annotations
 
 import base64
+import json
 import logging
 import socket
+import subprocess
 import sys
 import tempfile
 from dataclasses import dataclass, field
@@ -16,34 +22,88 @@ import trimesh
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# FreeCAD detection
+# FreeCAD detection — locate the .app bundle and its bundled Python
 # ---------------------------------------------------------------------------
 
+_FREECAD_APP_PATHS = [
+    Path("/Applications/FreeCAD.app"),
+    Path.home() / "Applications" / "FreeCAD.app",
+]
+
+_freecad_python: Path | None = None
+_freecad_lib: Path | None = None
 _freecad_available: bool | None = None
 
 
 def _detect_freecad() -> bool:
-    """Try to import FreeCAD modules. Cache the result."""
-    global _freecad_available
+    """Locate FreeCAD's bundled Python and lib directory. Cache the result."""
+    global _freecad_available, _freecad_python, _freecad_lib
     if _freecad_available is not None:
         return _freecad_available
 
-    # On macOS, FreeCAD Python libs live inside the .app bundle.
-    # Users may need to add the path manually or install via conda/pip.
-    try:
-        import FreeCAD  # noqa: F401
+    for app_path in _FREECAD_APP_PATHS:
+        python = app_path / "Contents" / "Resources" / "bin" / "python"
+        lib = app_path / "Contents" / "Resources" / "lib"
+        if python.exists() and (lib / "FreeCAD.so").exists():
+            _freecad_python = python
+            _freecad_lib = lib
+            _freecad_available = True
+            logger.info("FreeCAD found: %s (python: %s)", app_path, python)
+            return True
 
-        _freecad_available = True
-    except ImportError:
-        _freecad_available = False
-        logger.info("FreeCAD Python modules not available — STEP/FCStd export disabled")
-
-    return _freecad_available
+    _freecad_available = False
+    logger.info("FreeCAD not found — STEP/FCStd operations disabled")
+    return False
 
 
 def is_freecad_available() -> bool:
-    """Return whether FreeCAD Python modules are importable."""
+    """Return whether FreeCAD is installed and its Python is accessible."""
     return _detect_freecad()
+
+
+def _run_freecad_script(script: str, timeout: float = 30.0) -> dict:
+    """Execute a Python script using FreeCAD's bundled Python.
+
+    The script must print a single JSON line to stdout as its result.
+    Returns the parsed JSON dict, or {"error": "..."} on failure.
+    """
+    if not _freecad_python or not _freecad_lib:
+        return {"error": "FreeCAD Python not available"}
+
+    # Prepend sys.path setup so FreeCAD modules are importable
+    wrapper = f"""
+import sys, json
+sys.path.insert(0, {str(_freecad_lib)!r})
+try:
+{_indent(script, 4)}
+except Exception as _exc:
+    print(json.dumps({{"error": str(_exc)}}))
+"""
+    try:
+        proc = subprocess.run(
+            [str(_freecad_python), "-c", wrapper],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        # Find the last JSON line in stdout (FreeCAD may print warnings)
+        for line in reversed(proc.stdout.strip().splitlines()):
+            line = line.strip()
+            if line.startswith("{"):
+                return json.loads(line)
+        # No JSON found
+        stderr = proc.stderr.strip()[-500:] if proc.stderr else ""
+        return {"error": f"No JSON output from FreeCAD script. stderr: {stderr}"}
+    except subprocess.TimeoutExpired:
+        return {"error": "FreeCAD operation timed out"}
+    except Exception as e:
+        return {"error": f"Failed to run FreeCAD script: {e}"}
+
+
+def _indent(text: str, spaces: int) -> str:
+    """Indent every line of text by *spaces* spaces."""
+    prefix = " " * spaces
+    return "\n".join(prefix + line for line in text.splitlines())
 
 
 # ---------------------------------------------------------------------------
@@ -329,84 +389,108 @@ def analyze_mesh(stl_base64: str) -> CompatibilityResult:
 
 
 def export_step(stl_base64: str, output_path: str) -> ExportResult:
-    """Convert STL to STEP format using FreeCAD.
-
-    Parameters
-    ----------
-    stl_base64:
-        Base64-encoded STL binary data.
-    output_path:
-        Destination path for the .step file.
-    """
+    """Convert STL to STEP format using FreeCAD (via subprocess)."""
     if not is_freecad_available():
         return ExportResult(
             success=False,
             output_path=None,
-            error="FreeCAD is not installed. Install FreeCAD 1.0+ to enable STEP export. See: https://www.freecad.org/downloads.php",
+            error="FreeCAD is not installed. Install FreeCAD 1.0+ to enable STEP export.",
         )
 
-    import FreeCAD
-    import Part
+    # Write STL to temp file
+    stl_bytes = base64.b64decode(stl_base64)
+    tmp = tempfile.NamedTemporaryFile(suffix=".stl", delete=False)
+    tmp.write(stl_bytes)
+    tmp.flush()
+    tmp.close()
 
-    try:
-        stl_bytes = base64.b64decode(stl_base64)
-        tmp = tempfile.NamedTemporaryFile(suffix=".stl", delete=False)
-        tmp.write(stl_bytes)
-        tmp.flush()
-        tmp.close()
+    result = _run_freecad_script(f"""
+import Part
+shape = Part.Shape()
+shape.read({tmp.name!r})
+solid = Part.makeSolid(shape)
+solid.exportStep({output_path!r})
+print(json.dumps({{"success": True, "outputPath": {output_path!r}}}))
+""")
+    Path(tmp.name).unlink(missing_ok=True)
 
-        # Load STL into FreeCAD and convert to solid
-        shape = Part.Shape()
-        shape.read(tmp.name)
-        solid = Part.makeSolid(shape)
-        solid.exportStep(output_path)
-
-        Path(tmp.name).unlink(missing_ok=True)
-        return ExportResult(success=True, output_path=output_path, error=None)
-    except Exception as e:
-        return ExportResult(success=False, output_path=None, error=f"STEP export failed: {e}")
+    if "error" in result and result.get("error"):
+        return ExportResult(success=False, output_path=None, error=f"STEP export failed: {result['error']}")
+    return ExportResult(success=True, output_path=output_path, error=None)
 
 
 def export_fcstd(stl_base64: str, output_path: str, label: str = "CADDEE_Model") -> ExportResult:
-    """Convert STL to FreeCAD document (.FCStd) format.
-
-    Parameters
-    ----------
-    stl_base64:
-        Base64-encoded STL binary data.
-    output_path:
-        Destination path for the .FCStd file.
-    label:
-        Label for the object in the FreeCAD document.
-    """
+    """Convert STL to FreeCAD document (.FCStd) format (via subprocess)."""
     if not is_freecad_available():
         return ExportResult(
             success=False,
             output_path=None,
-            error="FreeCAD is not installed. Install FreeCAD 1.0+ to enable FCStd export. See: https://www.freecad.org/downloads.php",
+            error="FreeCAD is not installed. Install FreeCAD 1.0+ to enable FCStd export.",
         )
 
-    import FreeCAD
-    import Mesh as FcMesh
+    stl_bytes = base64.b64decode(stl_base64)
+    tmp = tempfile.NamedTemporaryFile(suffix=".stl", delete=False)
+    tmp.write(stl_bytes)
+    tmp.flush()
+    tmp.close()
 
-    try:
-        stl_bytes = base64.b64decode(stl_base64)
-        tmp = tempfile.NamedTemporaryFile(suffix=".stl", delete=False)
-        tmp.write(stl_bytes)
-        tmp.flush()
-        tmp.close()
+    result = _run_freecad_script(f"""
+import FreeCAD
+import Mesh
+doc = FreeCAD.newDocument("CADDEE")
+mesh_obj = doc.addObject("Mesh::Feature", {label!r})
+mesh_obj.Mesh = Mesh.Mesh({tmp.name!r})
+doc.recompute()
+doc.saveAs({output_path!r})
+FreeCAD.closeDocument(doc.Name)
+print(json.dumps({{"success": True, "outputPath": {output_path!r}}}))
+""")
+    Path(tmp.name).unlink(missing_ok=True)
 
-        doc = FreeCAD.newDocument("CADDEE")
-        mesh_obj = doc.addObject("Mesh::Feature", label)
-        mesh_obj.Mesh = FcMesh.Mesh(tmp.name)
-        doc.recompute()
-        doc.saveAs(output_path)
-        FreeCAD.closeDocument(doc.Name)
+    if "error" in result and result.get("error"):
+        return ExportResult(success=False, output_path=None, error=f"FCStd export failed: {result['error']}")
+    return ExportResult(success=True, output_path=output_path, error=None)
 
-        Path(tmp.name).unlink(missing_ok=True)
-        return ExportResult(success=True, output_path=output_path, error=None)
-    except Exception as e:
-        return ExportResult(success=False, output_path=None, error=f"FCStd export failed: {e}")
+
+# ---------------------------------------------------------------------------
+# Import helpers
+# ---------------------------------------------------------------------------
+
+_IMPORT_DIR = Path.home() / ".caddee" / "imports"
+
+
+def _ensure_import_workspace() -> Path:
+    """Create and return the persistent import workspace directory."""
+    _IMPORT_DIR.mkdir(parents=True, exist_ok=True)
+    return _IMPORT_DIR
+
+
+def _generate_import_scad(stl_path: Path, mesh: trimesh.Trimesh) -> str:
+    """Generate an OpenSCAD wrapper that imports the STL and documents its dimensions.
+
+    This lets Claude modify the imported design using boolean operations
+    (difference, union, intersection) around the imported mesh.
+    """
+    bounds = mesh.bounding_box.extents
+    centroid = mesh.centroid
+    return (
+        f"// Imported model: {stl_path.name}\n"
+        f"// Bounding box: {bounds[0]:.2f} x {bounds[1]:.2f} x {bounds[2]:.2f}\n"
+        f"// Centroid: [{centroid[0]:.2f}, {centroid[1]:.2f}, {centroid[2]:.2f}]\n"
+        f"// Vertices: {len(mesh.vertices)}, Faces: {len(mesh.faces)}\n"
+        f"//\n"
+        f"// To modify this model, wrap it in boolean operations:\n"
+        f"//   difference() {{ imported_model(); your_cut_geometry(); }}\n"
+        f"//   union() {{ imported_model(); your_added_geometry(); }}\n"
+        f"\n"
+        f"$fn = 64;\n"
+        f"\n"
+        f"module imported_model() {{\n"
+        f'    import("{stl_path}");\n'
+        f"}}\n"
+        f"\n"
+        f"imported_model();\n"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -456,9 +540,13 @@ def _import_scad(path: Path) -> ImportResult:
 
 
 def _import_stl(path: Path) -> ImportResult:
-    """Import an STL file — return as base64 for the viewport."""
+    """Import an STL file — copy to workspace, generate OpenSCAD wrapper, return base64."""
     try:
+        # Copy STL to persistent workspace so OpenSCAD import() path stays valid
+        workspace = _ensure_import_workspace()
+        dest = workspace / path.name
         stl_bytes = path.read_bytes()
+        dest.write_bytes(stl_bytes)
         stl_b64 = base64.b64encode(stl_bytes).decode("ascii")
 
         # Basic stats via trimesh
@@ -470,9 +558,13 @@ def _import_stl(path: Path) -> ImportResult:
             "faces": int(len(mesh.faces)),
         }
 
+        # Generate OpenSCAD wrapper so Claude can modify the imported mesh
+        scad_code = _generate_import_scad(dest, mesh)
+
         return ImportResult(
             success=True,
             file_type="stl",
+            scad_code=scad_code,
             stl_base64=stl_b64,
             metadata=metadata,
         )
@@ -481,7 +573,7 @@ def _import_stl(path: Path) -> ImportResult:
 
 
 def _import_step(path: Path) -> ImportResult:
-    """Import a STEP file via FreeCAD — convert to STL for viewport."""
+    """Import a STEP file via FreeCAD subprocess — convert to STL, generate OpenSCAD wrapper."""
     if not is_freecad_available():
         return ImportResult(
             success=False,
@@ -489,35 +581,50 @@ def _import_step(path: Path) -> ImportResult:
             error="FreeCAD is required to import STEP files. Install FreeCAD 1.0+.",
         )
 
-    import FreeCAD
-    import Part
-    import Mesh as FcMesh
+    # Save the converted STL into the import workspace
+    workspace = _ensure_import_workspace()
+    dest = workspace / (path.stem + ".stl")
 
-    try:
-        shape = Part.Shape()
-        shape.read(str(path))
+    result = _run_freecad_script(f"""
+import base64, FreeCAD, Part, Mesh
+shape = Part.Shape()
+shape.read({str(path)!r})
+doc = FreeCAD.newDocument("Import")
+part_obj = doc.addObject("Part::Feature", "Imported")
+part_obj.Shape = shape
+doc.recompute()
+Mesh.export([doc.getObject("Imported")], {str(dest)!r})
+FreeCAD.closeDocument(doc.Name)
+stl_bytes = open({str(dest)!r}, "rb").read()
+stl_b64 = base64.b64encode(stl_bytes).decode("ascii")
+print(json.dumps({{"success": True, "stlBase64": stl_b64}}))
+""", timeout=60.0)
 
-        # Export as STL to temp file
-        tmp = tempfile.NamedTemporaryFile(suffix=".stl", delete=False)
-        tmp.close()
-        FcMesh.export([shape], tmp.name)
+    if "error" in result and result.get("error"):
+        return ImportResult(success=False, file_type="step", error=f"Failed to import STEP: {result['error']}")
 
-        stl_bytes = Path(tmp.name).read_bytes()
-        stl_b64 = base64.b64encode(stl_bytes).decode("ascii")
-        Path(tmp.name).unlink(missing_ok=True)
+    stl_b64 = result.get("stlBase64", "")
 
-        return ImportResult(
-            success=True,
-            file_type="step",
-            stl_base64=stl_b64,
-            metadata={"fileName": path.name, "size": path.stat().st_size},
-        )
-    except Exception as e:
-        return ImportResult(success=False, file_type="step", error=f"Failed to import STEP: {e}")
+    # Generate OpenSCAD wrapper from the converted STL
+    scad_code = None
+    if dest.exists():
+        try:
+            mesh = trimesh.load(str(dest), force="mesh")
+            scad_code = _generate_import_scad(dest, mesh)
+        except Exception as e:
+            logger.warning("Could not generate OpenSCAD wrapper for STEP import: %s", e)
+
+    return ImportResult(
+        success=True,
+        file_type="step",
+        scad_code=scad_code,
+        stl_base64=stl_b64,
+        metadata={"fileName": path.name, "size": path.stat().st_size},
+    )
 
 
 def _import_fcstd(path: Path) -> ImportResult:
-    """Import a FreeCAD document — extract mesh as STL for viewport."""
+    """Import a FreeCAD document via subprocess — extract mesh as STL, generate OpenSCAD wrapper."""
     if not is_freecad_available():
         return ImportResult(
             success=False,
@@ -525,41 +632,48 @@ def _import_fcstd(path: Path) -> ImportResult:
             error="FreeCAD is required to import .FCStd files. Install FreeCAD 1.0+.",
         )
 
-    import FreeCAD
-    import Mesh as FcMesh
+    workspace = _ensure_import_workspace()
+    dest = workspace / (path.stem + ".stl")
 
-    try:
-        doc = FreeCAD.openDocument(str(path))
-        objects = doc.Objects
+    result = _run_freecad_script(f"""
+import base64, FreeCAD, Mesh
+doc = FreeCAD.openDocument({str(path)!r})
+objects = doc.Objects
+if not objects:
+    print(json.dumps({{"error": "FreeCAD document contains no objects."}}))
+else:
+    Mesh.export(objects, {str(dest)!r})
+    stl_bytes = open({str(dest)!r}, "rb").read()
+    stl_b64 = base64.b64encode(stl_bytes).decode("ascii")
+    obj_count = len(objects)
+    FreeCAD.closeDocument(doc.Name)
+    print(json.dumps({{"success": True, "stlBase64": stl_b64, "objectCount": obj_count}}))
+""", timeout=60.0)
 
-        if not objects:
-            FreeCAD.closeDocument(doc.Name)
-            return ImportResult(
-                success=False, file_type="fcstd", error="FreeCAD document contains no objects."
-            )
+    if "error" in result and result.get("error"):
+        return ImportResult(success=False, file_type="fcstd", error=f"Failed to import FCStd: {result['error']}")
 
-        # Export all visible objects as STL
-        tmp = tempfile.NamedTemporaryFile(suffix=".stl", delete=False)
-        tmp.close()
-        FcMesh.export(objects, tmp.name)
+    stl_b64 = result.get("stlBase64", "")
 
-        stl_bytes = Path(tmp.name).read_bytes()
-        stl_b64 = base64.b64encode(stl_bytes).decode("ascii")
-        Path(tmp.name).unlink(missing_ok=True)
-        FreeCAD.closeDocument(doc.Name)
+    scad_code = None
+    if dest.exists():
+        try:
+            mesh = trimesh.load(str(dest), force="mesh")
+            scad_code = _generate_import_scad(dest, mesh)
+        except Exception as e:
+            logger.warning("Could not generate OpenSCAD wrapper for FCStd import: %s", e)
 
-        return ImportResult(
-            success=True,
-            file_type="fcstd",
-            stl_base64=stl_b64,
-            metadata={
-                "fileName": path.name,
-                "size": path.stat().st_size,
-                "objectCount": len(objects),
-            },
-        )
-    except Exception as e:
-        return ImportResult(success=False, file_type="fcstd", error=f"Failed to import FCStd: {e}")
+    return ImportResult(
+        success=True,
+        file_type="fcstd",
+        scad_code=scad_code,
+        stl_base64=stl_b64,
+        metadata={
+            "fileName": path.name,
+            "size": path.stat().st_size,
+            "objectCount": result.get("objectCount", 0),
+        },
+    )
 
 
 # ---------------------------------------------------------------------------

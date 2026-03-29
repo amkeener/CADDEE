@@ -90,6 +90,7 @@ def call_claude(
     conversation: list[ConversationMessage],
     current_scad: str | None = None,
     images: list[str] | None = None,
+    model_context: str | None = None,
 ) -> ClaudeResult:
     """Send conversation history to Claude and return the result.
 
@@ -103,6 +104,10 @@ def call_claude(
     images:
         Optional list of data-URL-encoded images (``data:image/png;base64,…``)
         to attach to the latest user message for multimodal vision input.
+    model_context:
+        Optional mesh analysis summary for the currently loaded 3D model.
+        Injected into the system prompt so Claude can see compatibility
+        issues and model stats.
 
     Returns
     -------
@@ -114,6 +119,14 @@ def call_claude(
     if current_scad:
         system_prompt += (
             "\n\n<current_scad>\n" + current_scad + "\n</current_scad>"
+        )
+    if model_context:
+        system_prompt += (
+            "\n\n<current_model_analysis>\n"
+            "A 3D model (STL) is currently loaded in the viewport. "
+            "Here are the mesh compatibility check results:\n\n"
+            + model_context
+            + "\n</current_model_analysis>"
         )
 
     # Build the messages list in the API format.

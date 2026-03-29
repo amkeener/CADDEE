@@ -9,6 +9,7 @@
     "preview": "electron-vite preview",
     "typecheck": "tsc --noEmit",
     "pack": "electron-vite build && electron-builder --dir",
+    "install-app": "rm -rf /Applications/CADDEE.app && electron-vite build && electron-builder --dir && cp -R release/mac-arm64/CADDEE.app /Applications/CADDEE.app",
     "dist": "electron-vite build && electron-builder"
   },
   "build": {
@@ -24,12 +25,12 @@
       {
         "from": "../sidecar",
         "to": "sidecar",
-        "filter": ["**/*", "!__pycache__/**", "!*.pyc"]
+        "filter": ["**/*", "!__pycache__/**", "!*.pyc", "!.venv/**"]
       },
       {
         "from": "../shared",
         "to": "shared",
-        "filter": ["**/*", "!__pycache__/**", "!*.pyc"]
+        "filter": ["**/*", "!__pycache__/**", "!*.pyc", "!.venv/**"]
       }
     ],
     "mac": {

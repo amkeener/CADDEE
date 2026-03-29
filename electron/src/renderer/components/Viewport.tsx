@@ -11,9 +11,9 @@ interface ViewportProps {
   captureThumbRef?: MutableRefObject<(() => string) | null>
 }
 
-const BACKGROUND_COLOR = 0x1a1a2e
+const BACKGROUND_COLOR = 0x0E1A12
 const COLOR_STABLE = 0x888888
-const COLOR_COMPILING = 0xffcc00
+const COLOR_COMPILING = 0xFFB74D
 
 export function Viewport({ stlData, isCompiling, captureThumbRef }: ViewportProps) {
   const containerRef = useRef<HTMLDivElement>(null)

@@ -1,10 +1,20 @@
 import { ChildProcess, spawn } from 'child_process'
 import { join } from 'path'
+import { existsSync } from 'fs'
+import { app } from 'electron'
 import { EventEmitter } from 'events'
 import type { SidecarRequest, SidecarResponse } from '../../../shared/messages'
 import { createLogger } from './logger'
 
 const log = createLogger('sidecar')
+
+/** Paths that GUI apps (Launchpad) don't inherit from the shell */
+const EXTRA_PATH = [
+  '/usr/local/bin',
+  '/opt/homebrew/bin',
+  `${process.env.HOME}/.local/bin`,
+  `${process.env.HOME}/.cargo/bin`,
+].join(':')
 
 export class SidecarManager extends EventEmitter {
   private process: ChildProcess | null = null
@@ -15,15 +25,22 @@ export class SidecarManager extends EventEmitter {
   }>()
 
   start(): void {
-    const sidecarPath = join(__dirname, '../../../sidecar')
+    const sidecarPath = app.isPackaged
+      ? join(process.resourcesPath, 'sidecar')
+      : join(__dirname, '../../../sidecar')
+
+    log.info('Sidecar path: %s (exists=%s)', sidecarPath, existsSync(sidecarPath))
+
+    const env = {
+      ...process.env,
+      PYTHONUNBUFFERED: '1',
+      PATH: `${EXTRA_PATH}:${process.env.PATH ?? ''}`,
+    }
 
     this.process = spawn('uv', ['run', 'python', '-m', 'caddee.main'], {
       cwd: sidecarPath,
       stdio: ['pipe', 'pipe', 'pipe'],
-      env: {
-        ...process.env,
-        PYTHONUNBUFFERED: '1'
-      }
+      env,
     })
 
     this.process.stdout?.on('data', (data: Buffer) => {
@@ -34,6 +51,12 @@ export class SidecarManager extends EventEmitter {
     this.process.stderr?.on('data', (data: Buffer) => {
       const text = data.toString().trim()
       if (text) log.debug('stderr: %s', text)
+    })
+
+    this.process.on('error', (err) => {
+      log.error('Failed to start sidecar: %s', err.message)
+      this.process = null
+      this.rejectAllPending(new Error(`Sidecar failed to start: ${err.message}`))
     })
 
     this.process.on('exit', (code) => {

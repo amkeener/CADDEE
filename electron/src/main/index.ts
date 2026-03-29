@@ -39,6 +39,11 @@ function buildMenu(): void {
       label: 'File',
       submenu: [
         {
+          label: 'New Session',
+          accelerator: 'CmdOrCtrl+N',
+          click: () => mainWindow?.webContents.send('menu:new-session'),
+        },
+        {
           label: 'Save Session',
           accelerator: 'CmdOrCtrl+S',
           click: () => mainWindow?.webContents.send('menu:save-session'),

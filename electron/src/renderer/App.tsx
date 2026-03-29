@@ -41,6 +41,26 @@ export function App() {
   const chatMessagesRef = useRef<ChatMessage[]>([])
   const setChatMessagesRef = useRef<((msgs: ChatMessage[]) => void) | null>(null)
 
+  // New session handler — reset all state
+  const handleNewSession = useCallback(async () => {
+    // Clear sidecar conversation
+    await window.caddee.sendToSidecar({
+      id: crypto.randomUUID(),
+      type: 'load_session',
+      sessionData: { conversation: [], current_scad: null, iterations: [] },
+    })
+
+    // Reset all frontend state
+    setStlData(null)
+    setCurrentScad('')
+    setCurrentStlBase64('')
+    setIterations([])
+    setParams([])
+    setIsCompiling(false)
+    setChatMessagesRef.current?.([])
+    log.info('New session started')
+  }, [])
+
   // Session save handler
   const handleSaveSession = useCallback(async () => {
     const response = await window.caddee.sendToSidecar({
@@ -166,15 +186,17 @@ export function App() {
 
   // Listen for menu events
   useEffect(() => {
+    const cleanupNew = window.caddee.onMenuNewSession(handleNewSession)
     const cleanupSave = window.caddee.onMenuSaveSession(handleSaveSession)
     const cleanupOpen = window.caddee.onMenuOpenSession(handleOpenSession)
     const cleanupImport = window.caddee.onMenuImportFile(() => setShowImportWizard(true))
     return () => {
+      cleanupNew()
       cleanupSave()
       cleanupOpen()
       cleanupImport()
     }
-  }, [handleSaveSession, handleOpenSession])
+  }, [handleNewSession, handleSaveSession, handleOpenSession])
 
   const handleStlUpdate = useCallback((data: ArrayBuffer | null, scadCode?: string, stlBase64?: string) => {
     setStlData(data)
@@ -256,6 +278,7 @@ export function App() {
             iterationCount={iterations.length}
             messagesRef={chatMessagesRef}
             setMessagesRef={setChatMessagesRef}
+            currentStlBase64={currentStlBase64}
           />
         }
         right={

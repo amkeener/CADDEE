@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { colors } from '../theme/colors'
 
 interface ImportWizardProps {
   onImport: (result: ImportedFile) => void
@@ -110,8 +111,8 @@ const styles: Record<string, React.CSSProperties> = {
     zIndex: 1000,
   },
   dialog: {
-    background: '#1a1a2e',
-    border: '1px solid #333',
+    background: colors.bgElevated,
+    border: `1px solid ${colors.border}`,
     borderRadius: 12,
     width: 480,
     maxWidth: '90vw',
@@ -122,17 +123,17 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '16px 20px',
-    borderBottom: '1px solid #2a2a3e',
+    borderBottom: `1px solid ${colors.border}`,
   },
   title: {
     fontSize: 16,
     fontWeight: 600,
-    color: '#fff',
+    color: colors.textPrimary,
   },
   closeButton: {
     background: 'none',
     border: 'none',
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 22,
     cursor: 'pointer',
     padding: '0 4px',
@@ -142,7 +143,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '20px',
   },
   description: {
-    color: '#aaa',
+    color: colors.textSecondary,
     fontSize: 13,
     marginTop: 0,
     marginBottom: 16,
@@ -159,33 +160,33 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 12,
     alignItems: 'baseline',
     padding: '6px 10px',
-    background: '#12122a',
+    background: colors.bgPanel,
     borderRadius: 4,
   },
   formatExt: {
     fontSize: 12,
-    color: '#7c8aff',
+    color: colors.gold,
     fontWeight: 600,
     minWidth: 80,
     flexShrink: 0,
   },
   formatDesc: {
     fontSize: 12,
-    color: '#999',
+    color: colors.textSecondary,
   },
   error: {
-    color: '#f44336',
+    color: colors.error,
     fontSize: 12,
     marginBottom: 12,
     padding: '8px 10px',
-    background: 'rgba(244,67,54,0.1)',
+    background: 'rgba(229,115,115,0.1)',
     borderRadius: 4,
   },
   importButton: {
     width: '100%',
     padding: '10px',
-    background: '#2a2a5e',
-    border: '1px solid #444',
+    background: colors.primary,
+    border: `1px solid ${colors.borderStrong}`,
     borderRadius: 8,
     color: '#fff',
     fontSize: 14,

@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState, useCallback, type KeyboardEvent, type DragEvent, type ClipboardEvent, type MutableRefObject } from 'react'
 import { useChat } from '../hooks/useChat'
 import type { ChatMessage, ChatStatus } from '../types/messages'
+import { colors } from '../theme/colors'
 
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 const MAX_IMAGES = 5
@@ -12,6 +13,7 @@ interface ChatConsoleProps {
   iterationCount?: number
   messagesRef?: MutableRefObject<ChatMessage[]>
   setMessagesRef?: MutableRefObject<((msgs: ChatMessage[]) => void) | null>
+  currentStlBase64?: string
 }
 
 const STATUS_LABELS: Record<ChatStatus, string | null> = {
@@ -22,8 +24,8 @@ const STATUS_LABELS: Record<ChatStatus, string | null> = {
   error: null,
 }
 
-export function ChatConsole({ onStlUpdate, onCompileStateChange, onIteration, iterationCount = 0, messagesRef, setMessagesRef }: ChatConsoleProps) {
-  const { messages, status, sendMessage, setMessages } = useChat(onStlUpdate, onCompileStateChange, onIteration)
+export function ChatConsole({ onStlUpdate, onCompileStateChange, onIteration, iterationCount = 0, messagesRef, setMessagesRef, currentStlBase64 }: ChatConsoleProps) {
+  const { messages, status, sendMessage, setMessages } = useChat(onStlUpdate, onCompileStateChange, onIteration, currentStlBase64)
   const [input, setInput] = useState('')
   const [pendingImages, setPendingImages] = useState<string[]>([])
   const [isDragOver, setIsDragOver] = useState(false)
@@ -333,7 +335,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
 
 function ThinkingDots() {
   return (
-    <span style={{ letterSpacing: 2, color: '#888' }}>
+    <span style={{ letterSpacing: 2, color: colors.textSecondary }}>
       {'...'}
     </span>
   )
@@ -363,18 +365,18 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
-    background: '#0f0f23',
-    color: '#ccc',
+    background: colors.bgBase,
+    color: colors.textPrimary,
   },
   header: {
     padding: '14px 16px',
-    borderBottom: '1px solid #2a2a3e',
+    borderBottom: `1px solid ${colors.border}`,
     flexShrink: 0,
   },
   headerTitle: {
     fontSize: 15,
     fontWeight: 600,
-    color: '#fff',
+    color: colors.textPrimary,
     letterSpacing: 0.5,
   },
   messageArea: {
@@ -385,7 +387,7 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
   },
   emptyState: {
-    color: '#555',
+    color: colors.textMuted,
     fontSize: 14,
     textAlign: 'center',
     marginTop: 40,
@@ -395,28 +397,28 @@ const styles: Record<string, React.CSSProperties> = {
 
   // Bubbles
   userBubble: {
-    background: '#1e3a5f',
+    background: colors.chatUser,
     borderRadius: '14px 14px 4px 14px',
     padding: '10px 14px',
     maxWidth: '85%',
     wordBreak: 'break-word' as const,
   },
   assistantBubble: {
-    background: '#1a1a2e',
+    background: colors.chatAssistant,
     borderRadius: '14px 14px 14px 4px',
     padding: '10px 14px',
     maxWidth: '85%',
     wordBreak: 'break-word' as const,
-    border: '1px solid #2a2a3e',
+    border: `1px solid ${colors.border}`,
   },
   errorBubble: {
-    background: '#2e1a1a',
+    background: colors.chatError,
     borderRadius: '14px 14px 14px 4px',
     padding: '10px 14px',
     maxWidth: '85%',
     wordBreak: 'break-word' as const,
-    border: '1px solid #5f1e1e',
-    color: '#e88',
+    border: `1px solid ${colors.error}`,
+    color: colors.error,
   },
   bubbleText: {
     fontSize: 14,
@@ -425,7 +427,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   timestamp: {
     fontSize: 11,
-    color: '#555',
+    color: colors.textMuted,
     marginTop: 4,
     textAlign: 'right' as const,
   },
@@ -446,12 +448,12 @@ const styles: Record<string, React.CSSProperties> = {
   iterationBadge: {
     fontSize: 10,
     fontWeight: 600,
-    color: '#5588ff',
+    color: colors.sand,
     textTransform: 'uppercase' as const,
     letterSpacing: 1,
     whiteSpace: 'nowrap' as const,
     padding: '2px 8px',
-    background: '#1a2a4a',
+    background: colors.bgHover,
     borderRadius: 10,
   },
 
@@ -459,9 +461,9 @@ const styles: Record<string, React.CSSProperties> = {
   statusBar: {
     padding: '6px 16px',
     fontSize: 12,
-    color: '#8888aa',
-    background: '#13132a',
-    borderTop: '1px solid #2a2a3e',
+    color: colors.textSecondary,
+    background: colors.bgPanel,
+    borderTop: `1px solid ${colors.border}`,
     display: 'flex',
     alignItems: 'center',
     gap: 8,
@@ -471,15 +473,15 @@ const styles: Record<string, React.CSSProperties> = {
     width: 6,
     height: 6,
     borderRadius: '50%',
-    background: '#5588ff',
+    background: colors.primaryLight,
     display: 'inline-block',
-    animation: 'none', // CSS animations need keyframes; keep it simple
+    animation: 'none',
   },
 
   // Input
   inputArea: {
     padding: '12px 14px',
-    borderTop: '1px solid #2a2a3e',
+    borderTop: `1px solid ${colors.border}`,
     display: 'flex',
     gap: 8,
     alignItems: 'flex-end',
@@ -488,10 +490,10 @@ const styles: Record<string, React.CSSProperties> = {
   textarea: {
     flex: 1,
     padding: '10px 14px',
-    background: '#1a1a2e',
-    border: '1px solid #333',
+    background: colors.bgElevated,
+    border: `1px solid ${colors.border}`,
     borderRadius: 8,
-    color: '#ccc',
+    color: colors.textPrimary,
     fontSize: 14,
     lineHeight: '1.4',
     resize: 'none' as const,
@@ -504,7 +506,7 @@ const styles: Record<string, React.CSSProperties> = {
     width: 38,
     height: 38,
     borderRadius: 8,
-    background: '#2a4a7f',
+    background: colors.primary,
     border: 'none',
     color: '#fff',
     display: 'flex',
@@ -517,8 +519,8 @@ const styles: Record<string, React.CSSProperties> = {
     height: 38,
     borderRadius: 8,
     background: 'transparent',
-    border: '1px solid #333',
-    color: '#888',
+    border: `1px solid ${colors.border}`,
+    color: colors.textSecondary,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -527,13 +529,13 @@ const styles: Record<string, React.CSSProperties> = {
 
   // Drag-and-drop
   containerDragOver: {
-    outline: '2px dashed #7c8aff',
+    outline: `2px dashed ${colors.gold}`,
     outlineOffset: -2,
   },
   dragOverlay: {
     position: 'absolute' as const,
     inset: 0,
-    background: 'rgba(124, 138, 255, 0.08)',
+    background: 'rgba(27, 107, 42, 0.08)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -541,13 +543,13 @@ const styles: Record<string, React.CSSProperties> = {
     pointerEvents: 'none' as const,
   },
   dragOverlayText: {
-    color: '#7c8aff',
+    color: colors.gold,
     fontSize: 16,
     fontWeight: 600,
     padding: '12px 24px',
-    background: '#1a1a2e',
+    background: colors.bgElevated,
     borderRadius: 12,
-    border: '1px solid #7c8aff',
+    border: `1px solid ${colors.gold}`,
   },
 
   // Image preview strip (above input)
@@ -565,7 +567,7 @@ const styles: Record<string, React.CSSProperties> = {
     height: 56,
     borderRadius: 8,
     overflow: 'hidden',
-    border: '1px solid #333',
+    border: `1px solid ${colors.border}`,
     flexShrink: 0,
   },
   imagePreviewImg: {
@@ -592,7 +594,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   imageCount: {
     fontSize: 11,
-    color: '#555',
+    color: colors.textMuted,
   },
 
   // Images in message bubbles
@@ -607,6 +609,6 @@ const styles: Record<string, React.CSSProperties> = {
     height: 80,
     objectFit: 'cover' as const,
     borderRadius: 6,
-    border: '1px solid #333',
+    border: `1px solid ${colors.border}`,
   },
 }

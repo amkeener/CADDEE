@@ -1,3 +1,5 @@
+import { colors } from '../theme/colors'
+
 interface ExportButtonsProps {
   currentScad: string
   currentStlBase64: string
@@ -92,10 +94,10 @@ const styles: Record<string, React.CSSProperties> = {
   button: {
     flex: 1,
     padding: '8px 12px',
-    background: '#1a1a2e',
-    border: '1px solid #333',
+    background: colors.bgElevated,
+    border: `1px solid ${colors.border}`,
     borderRadius: 6,
-    color: '#ccc',
+    color: colors.textPrimary,
     fontSize: 13,
     fontWeight: 500,
     fontFamily: 'inherit',

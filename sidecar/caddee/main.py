@@ -83,6 +83,21 @@ _session = Session()
 # ---------------------------------------------------------------------------
 
 
+def _snake_to_camel(name: str) -> str:
+    """Convert snake_case to camelCase: 'stl_base64' -> 'stlBase64'."""
+    parts = name.split("_")
+    return parts[0] + "".join(p.capitalize() for p in parts[1:])
+
+
+def _camelize(obj: object) -> object:
+    """Recursively convert dict keys from snake_case to camelCase."""
+    if isinstance(obj, dict):
+        return {_snake_to_camel(k): _camelize(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_camelize(item) for item in obj]
+    return obj
+
+
 def main() -> None:
     """Read JSON requests from stdin, write JSON responses to stdout."""
     log.info("Sidecar process started (pid=%d)", __import__("os").getpid())
@@ -101,7 +116,7 @@ def main() -> None:
                 request.get("type", "?"),
                 elapsed,
             )
-            sys.stdout.write(json.dumps(response) + "\n")
+            sys.stdout.write(json.dumps(_camelize(response)) + "\n")
             sys.stdout.flush()
         except Exception as exc:
             log.exception("Unhandled exception processing request")
@@ -109,7 +124,7 @@ def main() -> None:
             if isinstance(request, dict):
                 req_id = request.get("id", req_id)
             error_resp = asdict(ErrorResponse(id=req_id, error=str(exc)))
-            sys.stdout.write(json.dumps(error_resp) + "\n")
+            sys.stdout.write(json.dumps(_camelize(error_resp)) + "\n")
             sys.stdout.flush()
 
 
@@ -128,7 +143,7 @@ def handle_request(request: dict) -> dict:
         return asdict(PongResponse(id=req_id))
 
     if req_type == "chat":
-        return _handle_chat(req_id, request.get("message", ""), request.get("images"))
+        return _handle_chat(req_id, request.get("message", ""), request.get("images"), request.get("stlBase64"))
 
     if req_type == "update_parameters":
         return _handle_update_parameters(req_id, request.get("scadCode", ""))
@@ -168,7 +183,7 @@ def handle_request(request: dict) -> dict:
 # ---------------------------------------------------------------------------
 
 
-def _handle_chat(req_id: str, user_message: str, images: list[str] | None = None) -> dict:
+def _handle_chat(req_id: str, user_message: str, images: list[str] | None = None, stl_base64: str | None = None) -> dict:
     """Full chat pipeline: Claude -> OpenSCAD compile -> optional retry.
 
     Flow:
@@ -180,16 +195,38 @@ def _handle_chat(req_id: str, user_message: str, images: list[str] | None = None
     """
     # Record the user message in the session.
     _session.add_user_message(user_message)
-    log.info("Chat request: %d chars, %d images, %d conversation msgs",
-             len(user_message), len(images or []), len(_session.conversation))
+    log.info("Chat request: %d chars, %d images, stl=%s, %d conversation msgs",
+             len(user_message), len(images or []), "yes" if stl_base64 else "no", len(_session.conversation))
+
+    # --- Build model context from current STL (if any) --------------------
+    model_context: str | None = None
+    if stl_base64:
+        try:
+            analysis = freecad_service.analyze_mesh(stl_base64)
+            result_dict = analysis.to_dict()
+            lines = [f"Overall: {analysis.overall}"]
+            for check in result_dict["checks"]:
+                status = "PASS" if check["passed"] else check["severity"].upper()
+                lines.append(f"  [{status}] {check['name']}: {check['message']}")
+            stats = result_dict["stats"]
+            lines.append(f"  Mesh stats: {stats.get('vertices', '?')} vertices, {stats.get('faces', '?')} faces")
+            if "volume" in stats:
+                lines.append(f"  Volume: {stats['volume']} cubic units")
+            if "boundingBox" in stats:
+                lines.append(f"  Bounding box: {stats['boundingBox']}")
+            model_context = "\n".join(lines)
+            log.debug("Model context: %d chars, overall=%s", len(model_context), analysis.overall)
+        except Exception as exc:
+            log.warning("Failed to analyze mesh for context: %s", exc)
 
     # --- First attempt ---------------------------------------------------
     conversation, current_scad = _session.get_context_for_claude()
-    log.debug("Context: %d messages, scad=%s", len(conversation), "yes" if current_scad else "no")
+    log.debug("Context: %d messages, scad=%s, model_context=%s",
+              len(conversation), "yes" if current_scad else "no", "yes" if model_context else "no")
 
     try:
         t0 = time.monotonic()
-        result = call_claude(conversation, current_scad, images=images)
+        result = call_claude(conversation, current_scad, images=images, model_context=model_context)
         log.info("Claude responded in %.1fs, scad=%s, text=%d chars",
                  time.monotonic() - t0, "yes" if result.scad_code else "no", len(result.text))
     except Exception as exc:
@@ -366,6 +403,12 @@ def _handle_import_file(req_id: str, file_path: str) -> dict:
         return asdict(ErrorResponse(id=req_id, error="No file path provided"))
     result = freecad_service.import_file(file_path)
     d = result.to_dict()
+
+    # Store imported scad code in session so Claude can see/modify it
+    if d.get("scadCode"):
+        _session.current_scad = d["scadCode"]
+        log.info("Imported %s — set current_scad (%d chars)", d["fileType"], len(d["scadCode"]))
+
     return asdict(ImportResponse(
         id=req_id,
         success=d["success"],
