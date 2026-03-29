@@ -1,0 +1,107 @@
+# CADDEE Python Sidecar Expert
+# Claude API, OpenSCAD CLI, FreeCAD/trimesh integration
+
+domain_id: "caddee-sidecar-001"
+
+version: "1.0"
+last_updated: "2026-03-28"
+
+overview:
+  description: |
+    Expert in the CADDEE Python sidecar: Claude API integration, OpenSCAD CLI
+    compilation, mesh analysis (trimesh), FreeCAD export/sync, and session management.
+    The sidecar is a long-lived Python process communicating via stdio JSON.
+  primary_domain: "Python sidecar services and AI-to-CAD pipeline"
+  secondary_domains:
+    - "Anthropic SDK (Claude API) for OpenSCAD code generation"
+    - "OpenSCAD CLI subprocess management"
+    - "trimesh mesh analysis (compatibility checks)"
+    - "FreeCAD Python API (STEP/FCStd export, optional)"
+    - "Session state management and serialization"
+    - "uv package management"
+
+  key_files:
+    - sidecar/caddee/main.py
+    - sidecar/caddee/services/claude_service.py
+    - sidecar/caddee/services/openscad_service.py
+    - sidecar/caddee/services/freecad_service.py
+    - sidecar/caddee/services/session_manager.py
+    - sidecar/caddee/prompts/system_prompt.txt
+
+file_patterns:
+  - "sidecar/**/*.py"
+  - "sidecar/pyproject.toml"
+  - "sidecar/uv.lock"
+  - "shared/messages.py"
+
+keywords:
+  - sidecar
+  - python
+  - claude
+  - anthropic
+  - openscad
+  - freecad
+  - trimesh
+  - mesh
+  - stl
+  - step
+  - session
+  - compile
+  - service
+
+# Architecture rules
+architecture:
+  message_loop: |
+    main.py runs a synchronous stdin line-reading loop. Each JSON line is a request,
+    each response is a JSON line on stdout. Logging goes to stderr only.
+    Request routing is via the `type` field in handle_request().
+  service_pattern: |
+    Services are stateless modules with pure functions that take data and return
+    typed result dataclasses. State lives in the global Session object in main.py.
+    Services: claude_service, openscad_service, freecad_service, session_manager.
+  error_recovery: |
+    Chat pipeline has two-tier error recovery: if OpenSCAD compilation fails,
+    the error is fed back to Claude for ONE automatic retry. If retry also fails,
+    a ChatErrorResponse is returned. Services never raise — they return error results.
+  dependencies: |
+    Tier 1 (always available): anthropic, trimesh, numpy.
+    Tier 2 (optional): FreeCAD Python modules (detected at runtime).
+    All deps managed via uv + pyproject.toml.
+
+coding_standards:
+  - "project/coding-standards/python.md"
+
+guidelines:
+  - "Services return dataclass results — never raise exceptions to the caller"
+  - "All stdout is reserved for IPC JSON — use stderr for logging"
+  - "Use dataclasses for all structured data (results, messages)"
+  - "Type hint all public functions"
+  - "Use pathlib.Path for file operations, not os.path"
+  - "Temp files: use tempfile.NamedTemporaryFile(delete=False) for files consumed downstream"
+  - "Clean up temp files after use with Path.unlink(missing_ok=True)"
+  - "FreeCAD imports must be guarded — always check is_freecad_available() first"
+  - "base64 encoding for STL: use base64.b64encode(data).decode('ascii')"
+  - "New request types need: handler in main.py, message type in shared/messages.py"
+  - "Session state is global (_session in main.py) — one session per process lifetime"
+  - "Use uv for dependency management: uv add, uv lock, uv run"
+  - "from __future__ import annotations at the top of every file"
+  - "No Pydantic, no TypedDict — dataclasses only"
+  - "Use Literal types for discriminated unions"
+
+validation_commands:
+  - "cd sidecar && uv run python -m py_compile caddee/main.py"
+  - "cd sidecar && uv run python -m py_compile caddee/services/freecad_service.py"
+  - "cd sidecar && uv run python -m py_compile caddee/services/claude_service.py"
+  - "cd sidecar && uv run python -m py_compile caddee/services/openscad_service.py"
+  - "cd sidecar && echo '{\"id\":\"1\",\"type\":\"ping\"}' | uv run python -m caddee.main 2>/dev/null"
+  - "cd sidecar && uv run python -c \"import trimesh; print('trimesh OK')\""
+
+context_files:
+  - "sidecar/caddee/main.py"
+  - "sidecar/caddee/services/claude_service.py"
+  - "sidecar/caddee/services/openscad_service.py"
+  - "sidecar/caddee/services/freecad_service.py"
+  - "sidecar/caddee/services/session_manager.py"
+  - "sidecar/pyproject.toml"
+  - "shared/messages.py"
+  - "project/coding-standards/python.md"

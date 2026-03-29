@@ -1,0 +1,98 @@
+# CADDEE IPC & Shared Types Expert
+# Stdio JSON protocol, message types, preload bridge
+
+domain_id: "caddee-ipc-001"
+
+version: "1.0"
+last_updated: "2026-03-28"
+
+overview:
+  description: |
+    Expert in the CADDEE IPC layer: shared message types (Python + TypeScript),
+    the stdio JSON protocol between Electron and the Python sidecar, the Electron
+    preload bridge, and main-process IPC handlers. Ensures both sides stay in sync.
+  primary_domain: "IPC protocol and shared message types"
+  secondary_domains:
+    - "Electron preload bridge (contextBridge)"
+    - "Main-process IPC handler registration"
+    - "stdio JSON line protocol"
+    - "Dual-language type definitions (Python dataclasses + TS interfaces)"
+    - "Base64 binary encoding for STL transfer"
+
+  key_files:
+    - shared/messages.py
+    - shared/messages.ts
+    - electron/src/preload/index.ts
+    - electron/src/main/ipc-handlers.ts
+    - sidecar/caddee/main.py
+
+file_patterns:
+  - "shared/**"
+  - "electron/src/preload/**/*.ts"
+  - "electron/src/main/ipc-handlers.ts"
+  - "electron/src/renderer/types/**/*.ts"
+
+keywords:
+  - ipc
+  - message
+  - protocol
+  - preload
+  - bridge
+  - request
+  - response
+  - sidecar
+  - stdio
+  - json
+  - shared
+  - sync
+
+# Architecture rules
+architecture:
+  protocol: |
+    Electron main process spawns the Python sidecar as a child process. Communication
+    is via stdio: one JSON object per line on stdin (requests) and stdout (responses).
+    The renderer never talks to the sidecar directly — it goes through the preload bridge.
+  dual_types: |
+    Message types are defined in both shared/messages.py (Python dataclasses) and
+    shared/messages.ts (TypeScript interfaces). These MUST stay in sync. The `type`
+    discriminator field uses snake_case in both languages. Field names use snake_case
+    in Python and camelCase in TypeScript.
+  preload_bridge: |
+    The preload script exposes a `window.caddee` API via Electron's contextBridge.
+    All renderer-to-sidecar communication goes through this API. New IPC methods
+    require changes in three files: preload/index.ts, main/ipc-handlers.ts,
+    and the CaddeeAPI type.
+  adding_messages: |
+    To add a new message type:
+    1. Add @dataclass in shared/messages.py + add to union type
+    2. Add interface in shared/messages.ts + add to union type
+    3. Add handler _handle_<type>() in sidecar/caddee/main.py
+    4. Add routing case in handle_request()
+    5. If renderer needs access: update preload and ipc-handlers
+
+coding_standards:
+  - "project/coding-standards/ipc.md"
+
+guidelines:
+  - "Every message has `id` (string) and `type` (string discriminator) fields"
+  - "Type discriminator values use snake_case in both languages (e.g., 'chat_response')"
+  - "Python fields: snake_case. TypeScript fields: camelCase"
+  - "shared/messages.py and shared/messages.ts MUST stay in sync — update both together"
+  - "New request types need: message types in both shared files, handler in main.py"
+  - "Union types (SidecarRequest, SidecarResponse) must include all message types"
+  - "Binary data (STL) is base64-encoded as string, never raw bytes over IPC"
+  - "stdout is reserved for IPC JSON in the sidecar — logging goes to stderr"
+  - "Renderer communicates via window.caddee API, never direct IPC calls"
+  - "Use crypto.randomUUID() for request IDs on the Electron side"
+
+validation_commands:
+  - "cd sidecar && uv run python -c \"from shared.messages import SidecarRequest, SidecarResponse; print('messages.py OK')\""
+  - "cd electron && npx tsc --noEmit"
+
+context_files:
+  - "shared/messages.py"
+  - "shared/messages.ts"
+  - "electron/src/preload/index.ts"
+  - "electron/src/main/ipc-handlers.ts"
+  - "sidecar/caddee/main.py"
+  - "project/coding-standards/ipc.md"

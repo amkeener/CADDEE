@@ -1,0 +1,10 @@
+{
+  "session_id": "adw-build-20260328-phase4",
+  "workflow_type": "build",
+  "status": "completed",
+  "expert_used": "caddee-sidecar",
+  "secondary_experts": ["caddee-electron", "caddee-ipc"],
+  "plan_path": "project/specs/plan/completed/plan-adw-phase4-image-input.md",
+  "atdd_mode": false,
+  "completed_at": "2026-03-28"
+}

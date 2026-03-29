@@ -35,3 +35,11 @@ out/
 build/
 *.stl
 *.step
+
+# Runtime logs
+logs/
+electron/logs/
+sidecar/logs/
+
+# uv lock file
+sidecar/uv.lock

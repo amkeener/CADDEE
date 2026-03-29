@@ -1,0 +1,102 @@
+# CADDEE Electron Renderer Expert
+# React + Three.js + TypeScript desktop UI
+
+domain_id: "caddee-electron-001"
+
+version: "1.0"
+last_updated: "2026-03-28"
+
+overview:
+  description: |
+    Expert in the CADDEE Electron renderer: React components, Three.js 3D viewport,
+    state management, and desktop UI patterns. Handles the renderer process that
+    displays the 3D viewport, chat console, and tools panel.
+  primary_domain: "Electron renderer with React and Three.js"
+  secondary_domains:
+    - "Three.js STL rendering and OrbitControls"
+    - "React state management (hooks, refs, callbacks)"
+    - "Electron preload bridge (contextBridge API)"
+    - "Inline CSS-in-JS styling (dark theme)"
+    - "electron-vite build tooling"
+
+  key_files:
+    - electron/src/renderer/App.tsx
+    - electron/src/renderer/components/Viewport.tsx
+    - electron/src/renderer/components/ChatConsole.tsx
+    - electron/src/renderer/components/ToolsPanel.tsx
+    - electron/src/preload/index.ts
+
+file_patterns:
+  - "electron/src/renderer/**/*.tsx"
+  - "electron/src/renderer/**/*.ts"
+  - "electron/src/preload/**/*.ts"
+  - "electron/src/main/**/*.ts"
+  - "electron/package.json"
+  - "electron/tsconfig.json"
+  - "electron/electron-vite.config.ts"
+
+keywords:
+  - electron
+  - renderer
+  - react
+  - three.js
+  - viewport
+  - stl
+  - chat
+  - tools panel
+  - component
+  - hook
+  - preload
+  - ipc
+  - menu
+
+# Architecture rules
+architecture:
+  component_pattern: |
+    Components are functional React components using hooks. State lives in App.tsx
+    and flows down via props. No external state libraries (Redux, Zustand).
+  styling: |
+    All styling uses inline CSS-in-JS via `const styles: Record<string, React.CSSProperties>`.
+    Dark theme: backgrounds #0f0f23 / #1a1a2e, text #ccc/#fff, borders #2a2a3e/#333.
+    No CSS files, no Tailwind, no styled-components.
+  preload_bridge: |
+    Renderer communicates with main process via window.caddee API exposed in preload.
+    All sidecar communication goes through: renderer -> preload -> main -> sidecar.
+    New IPC methods need changes in 3 files: preload/index.ts, main/ipc-handlers.ts,
+    and the CaddeeAPI type.
+  three_js: |
+    Viewport.tsx owns the Three.js scene. Uses STLLoader for mesh loading, OrbitControls
+    for camera interaction. Mesh material color changes for compile status feedback
+    (grey=stable, yellow=compiling). Thumbnail capture via canvas toDataURL.
+
+coding_standards:
+  - "project/coding-standards/typescript.md"
+
+guidelines:
+  - "State flows from App.tsx down — components receive data and callbacks via props"
+  - "Use inline styles (Record<string, React.CSSProperties>), never CSS files"
+  - "Dark theme palette: bg #0f0f23/#1a1a2e, text #ccc/#fff, border #2a2a3e/#333, accent #7c8aff"
+  - "All sidecar calls go through window.caddee.sendToSidecar() — never call IPC directly"
+  - "New preload methods require updating preload/index.ts AND the CaddeeAPI type"
+  - "Use crypto.randomUUID() for request IDs"
+  - "Three.js resources (geometries, materials) must be disposed on unmount"
+  - "Base64 STL ↔ ArrayBuffer conversion: use atob + Uint8Array pattern from App.tsx"
+  - "Components are self-contained — no shared CSS, no external component libraries"
+  - "Prefer useCallback for handlers passed to child components"
+  - "Functional components only — no class components"
+  - "No external state libraries (Redux, Zustand, etc.)"
+  - "TypeScript strict mode — no untyped `any` without justification"
+  - "Use type-only imports: import type { Foo } from './types'"
+
+validation_commands:
+  - "cd electron && npx tsc --noEmit"
+  - "cd electron && npm run dev"
+
+context_files:
+  - "electron/src/renderer/App.tsx"
+  - "electron/src/preload/index.ts"
+  - "electron/src/main/ipc-handlers.ts"
+  - "electron/tsconfig.json"
+  - "electron/package.json"
+  - "shared/messages.ts"
+  - "project/coding-standards/typescript.md"
