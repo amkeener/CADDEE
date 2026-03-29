@@ -1,10 +1,17 @@
-import { ipcMain, dialog, BrowserWindow } from 'electron'
+import { ipcMain, dialog, BrowserWindow, shell } from 'electron'
 import { writeFile, readFile } from 'fs/promises'
 import { SidecarManager } from './sidecar'
 import { saveApiKey, clearApiKey, hasApiKey } from './credentials'
 import type { SidecarRequest } from '../../../shared/messages'
 
 export function setupIpcHandlers(sidecar: SidecarManager): void {
+  // Open URLs in the user's default browser (not an Electron window)
+  ipcMain.on('shell:open-external', (_event, url: string) => {
+    if (url.startsWith('https://')) {
+      shell.openExternal(url)
+    }
+  })
+
   ipcMain.handle('sidecar:send', async (_event, request: SidecarRequest) => {
     return sidecar.send(request)
   })

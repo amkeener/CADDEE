@@ -125,9 +125,11 @@ export function ApiKeyModal({ onClose, onKeySaved, canClose }: ApiKeyModalProps)
             <span style={styles.helpText}>
               Need a key?{' '}
               <a
-                href="https://console.anthropic.com/settings/keys"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  window.caddee.openExternal('https://console.anthropic.com/settings/keys')
+                }}
                 style={styles.link}
               >
                 Get one from Anthropic Console

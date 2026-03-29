@@ -55,6 +55,11 @@ const api = {
     return () => ipcRenderer.removeListener('menu:open-session', handler)
   },
 
+  // External links — opens in user's default browser (e.g. logged-in Chrome)
+  openExternal: (url: string): void => {
+    ipcRenderer.send('shell:open-external', url)
+  },
+
   // API Key management
   getApiKeyStatus: (): Promise<{ configured: boolean; source: 'env' | 'stored' | 'none' }> => {
     return ipcRenderer.invoke('api-key:status')
